@@ -6,8 +6,9 @@ package Driver // where "driver" is the folder that contains io.go, io.c, io.h, 
 */
 import "C"
 
-func IO_init() int {
-	return C.io_init()
+func IO_init()int{
+	//return C.io_init()
+	return int(C.io_init())
 }
 
 func IO_set_bit(channel int) {
@@ -23,9 +24,9 @@ func IO_write_analog(channel int, value int) {
 }
 
 func IO_read_bit(channel int) int {
-	return C.io_read_bit(C.int(channel))
+	return int(C.io_read_bit(C.int(channel)))
 }
 
 func IO_read_analog(channel int) int {
-	return C.io_read_analog(C.int(channel))
+	return int(C.io_read_analog(C.int(channel)))
 }
