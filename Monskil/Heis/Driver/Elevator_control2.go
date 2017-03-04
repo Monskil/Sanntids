@@ -146,7 +146,7 @@ func Elev_get_button_signal(button Elev_button_type_t, floor int) (int, error, i
     if button == BUTTON_CALL_DOWN && floor == 0 {
 		return -1, fmt.Errorf("Button down from ground floor does not exist"),0
 	}
-    return 1, nil, IO_read_bit(Button_channel_matrix[floor][button])
+    return 0, nil, IO_read_bit(Button_channel_matrix[floor][button])
 }
 
 func Elev_get_floor_sensor_signal() int{
@@ -175,6 +175,8 @@ func Floor_tracking(){
 	Elev_set_floor_indicator(Elev_get_floor_sensor_signal())
 }
 
+
+
 var Lamp_channel_matrix = [N_FLOORS][N_BUTTONS] int {
 	{LIGHT_UP1,LIGHT_DOWN1,LIGHT_COMMAND1},
 	{LIGHT_UP2,LIGHT_DOWN2,LIGHT_COMMAND2},
@@ -189,4 +191,73 @@ var Button_channel_matrix = [N_FLOORS][N_BUTTONS]int{
 	{BUTTON_UP4,BUTTON_DOWN4,BUTTON_COMMAND4},
 }
 
+var FAKE_LISTE = [6]int{0, 1, 0, 0, 1, 0}
 
+func Check_all_buttons()(int){
+	for floor := 0; floor < N_FLOORS; floor++ {
+		if _,_,x := Elev_get_button_signal(BUTTON_CALL_UP, floor);x == 1{
+			return Button_channel_matrix[floor][0]
+		}else if _,_,x := Elev_get_button_signal(BUTTON_CALL_DOWN, floor);x == 1{
+			return Button_channel_matrix[floor][1]
+		}else if _,_,x := Elev_get_button_signal(BUTTON_COMMAND, floor);x == 1{
+			return Button_channel_matrix[floor][2]
+		}
+	}
+	return -1	
+}
+
+func Register_button(){
+	for floor := 0; floor < N_FLOORS; floor++ {
+		if Check_all_buttons() == Button_channel_matrix[floor][0] {
+			Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+		}else
+		if Check_all_buttons() == Button_channel_matrix[floor][1] {
+			Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+		}else
+		if Check_all_buttons() == Button_channel_matrix[floor][2] {
+			Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+		}
+	}
+	if Get_stop_signal() != 0{
+		Elev_set_stop_lamp(true)
+	}
+}
+
+func JUNIORRRR_aka_Order_complete(){
+	for floor := 0; floor < N_FLOORS; floor++ {
+		if Order_inner_list[floor]==1 && Elev_get_floor_sensor_signal()==floor /*dooropen*/{
+			 Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+			 Order_inner_list[floor] = 0
+		}
+	}
+}
+
+var Order_outer_list = [N_FLOORS][N_BUTTONS-1]int{
+	{0, 0}, //Venstre kolonne er "Opp", høyre er "Ned"
+	{0, 0},
+	{0, 0},
+	{0, 0},
+}
+
+var Order_inner_list = [4]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
+
+func Order_set_outer_order(){
+	for floor := 0; floor < N_FLOORS-1; floor++ {
+		if Check_all_buttons() == Button_channel_matrix[floor][0] {
+			Order_outer_list[floor][0]=1
+		}
+	}
+	for floor := 1; floor < N_FLOORS; floor++ {
+		if Check_all_buttons() == Button_channel_matrix[floor][1] {
+			Order_outer_list[floor][1]=1
+		}
+	}
+}
+
+func Order_set_inner_order(){
+	for floor := 0; floor < N_FLOORS; floor++{
+		if Check_all_buttons() == Button_channel_matrix[floor][2] {
+			Order_inner_list[floor] = 1
+		}
+	}
+}
