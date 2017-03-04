@@ -9,7 +9,7 @@ package Driver // where "driver" is the folder that contains IO.go, IO.c, IO.h, 
 import (
 	"fmt"
 	//"runtime"
-	//"time"
+	"time"
 )
 
 const N_FLOORS int = 4
@@ -225,9 +225,17 @@ func Register_button(){
 
 func JUNIORRRR_aka_Order_complete(){
 	for floor := 0; floor < N_FLOORS; floor++ {
-		if Order_inner_list[floor]==1 && Elev_get_floor_sensor_signal()==floor /*dooropen*/{
-			 Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
-			 Order_inner_list[floor] = 0
+		if Order_inner_list[floor] == 1 && Elev_get_floor_sensor_signal() == floor /*dooropen*/{
+			Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+			Order_inner_list[floor] = 0
+		}
+		if Order_outer_list[floor][0] == 1 && Elev_get_floor_sensor_signal() == floor && IO_read_bit(MOTORDIR) == 0 /*DOOROPEN*/{
+			Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
+			Order_outer_list[floor][0] = 0
+		}else
+		if Order_outer_list[floor][1] == 1 && Elev_get_floor_sensor_signal() == floor && IO_read_bit(MOTORDIR) == 1 /*DOOROPEN*/{
+			Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
+			Order_outer_list[floor][1] = 0
 		}
 	}
 }
@@ -260,4 +268,26 @@ func Order_set_inner_order(){
 			Order_inner_list[floor] = 1
 		}
 	}
+}
+
+func Manage_door() int{
+	if Elev_get_floor_sensor_signal() != -1 && IO_read_bit(MOTOR) == 0{
+		//shut_door_time := time.NewTimer(time.Second*3)//3 + time.Now().UnixNano()/int64(time.Second) //STUDASSSSS, hele for løkka tar "3s" trur vi
+		//<-shut_door_time.C
+		timeout := time.After(3*time.Second)
+
+
+
+		for /*time.Now().UnixNano()/int64(time.Second) < shut_door_time*/{
+			
+			if <-timeout {
+				return 0
+			}
+			Elev_set_door_open_lamp(true)
+			Order_set_inner_order()
+			Order_set_outer_order()
+		}
+		Elev_set_door_open_lamp(false)	
+	}
+	return 0
 }
