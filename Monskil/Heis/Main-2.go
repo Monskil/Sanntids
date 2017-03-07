@@ -9,9 +9,7 @@ import (
 
 func main() {
 	Driver.Elev_init()
-	for {
-		FSM.Function_state_machine()
-	}
+	FSM.Function_state_machine()
 
 	/*for {
 		//Driver.Elev_get_floor_sensor_signal() != 0{
