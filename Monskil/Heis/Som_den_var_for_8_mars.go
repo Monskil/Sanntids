@@ -220,19 +220,16 @@ func Go_to_buttons(Button_chan chan bool) {
 	}
 }
 
-func Register_button(Order_chan chan bool) {
+func Register_button() {
 
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] {
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
-				Order_chan <- true
 			} else if Check_all_buttons() == Button_channel_matrix[floor][1] {
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
-				Order_chan <- true
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
-				Order_chan <- true
 			}
 		}
 		if Get_stop_signal() != 0 {
@@ -325,34 +322,45 @@ func JONIOOOOOORRR() {
 	}
 }
 
-func Next_order() Elev_motor_direction_t {
+func Next_order(Direction_chan chan Elev_motor_direction_t) {
+	for {
+		//if direction_up == true {
 
-	//if direction_up == true {
-	for floor := current_floor; floor < N_FLOORS; floor++ {
-		if current_floor == 0 && (Order_inner_list[floor] == 1) {
-			return DIRN_UP
-		} else if (IO_read_bit(MOTORDIR) == 0) && (Order_inner_list[floor] == 1) && (floor > current_floor) {
-			return DIRN_UP
-		} else if (Order_inner_list[floor] == 1) && (floor > current_floor) {
-			return DIRN_UP
+		for floor := current_floor; floor < N_FLOORS; floor++ {
+			if current_floor == 0 && (Order_inner_list[floor] == 1) {
+				//fmt.Println("1")
+				Direction_chan <- DIRN_UP
+			} else if (IO_read_bit(MOTORDIR) == 0) && (Order_inner_list[floor] == 1) && (floor > current_floor) {
+				//fmt.Println("2")
+				Direction_chan <- DIRN_UP
+			} else if (Order_inner_list[floor] == 1) && (floor > current_floor) {
+				//fmt.Println("3")
+				Direction_chan <- DIRN_UP
+			}
+		} /*else if direction_up == false {
+
+		//	}
+		//}
+
+		/*func Next_order_down(Direction_chan chan Elev_motor_direction_t) {
+		for {*/
+		for floor := current_floor; floor >= 0; floor-- {
+			if current_floor == 3 && (Order_inner_list[floor] == 1) {
+				Direction_chan <- DIRN_DOWN
+			} else if (IO_read_bit(MOTORDIR) == 1) && (Order_inner_list[floor] == 1) && (floor < current_floor) {
+				Direction_chan <- DIRN_DOWN
+			} else if (Order_inner_list[floor] == 1) && (floor < current_floor) {
+				Direction_chan <- DIRN_DOWN
+			}
 		}
 	}
-	for floor := current_floor; floor >= 0; floor-- {
-		if current_floor == 3 && (Order_inner_list[floor] == 1) {
-			return DIRN_DOWN
-		} else if (IO_read_bit(MOTORDIR) == 1) && (Order_inner_list[floor] == 1) && (floor < current_floor) {
-			return DIRN_DOWN
-		} else if (Order_inner_list[floor] == 1) && (floor < current_floor) {
-			return DIRN_DOWN
-		}
-	}
-	return DIRN_STOP
 }
 
 func Is_arrived(Arrived_chan chan bool) {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if IO_read_bit(MOTORDIR) == 0 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
+				fmt.Println("ja")
 				Order_inner_list[floor] = 0
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
