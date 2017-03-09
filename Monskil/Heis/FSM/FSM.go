@@ -38,6 +38,7 @@ func Function_state_machine() {
 		case <-Set_timeout_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			Driver.Elev_set_door_open_lamp(false)
+			//Driver.Is_arrived_2()
 
 		}
 	}
