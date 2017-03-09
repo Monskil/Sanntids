@@ -63,7 +63,7 @@ func Elev_init() (int, error) {
 	Elev_set_motor_dir(DIRN_STOP)
 	Elev_set_floor_indicator(0)
 	current_floor = 0
-	direction_up = true
+	direction = 0
 	return 0, nil
 }
 
@@ -299,9 +299,8 @@ func Order_set_inner_order() {
 }
 
 /////////////MANN ER GUL/////////////
-var direction_up bool = true
 
-func JONIOOOOOORRR() {
+/*func JONIOOOOOORRR() {
 	for {
 		for floor := current_floor; floor < N_FLOORS; floor++ {
 			if Order_inner_list[floor] == 1 {
@@ -310,11 +309,11 @@ func JONIOOOOOORRR() {
 				direction_up = false
 			}
 		}
-		/*}
+		}
 		}
 
 		func JONIOOOOOORRR_2(Dir_up_chan chan bool, Dir_down_chan chan bool) {
-			for {*/
+			for {
 		for floor := current_floor; floor >= 0; floor-- {
 			if Order_inner_list[floor] == 1 {
 				direction_up = false
@@ -323,29 +322,56 @@ func JONIOOOOOORRR() {
 			}
 		}
 	}
+}*/
+/*func Set_elev_direction() int {
+
+	if direction == 0 {
+
+	} else if direction == 1 {
+
+	} else if direction == -1 {
+
+	}
 }
+*/
+var direction int = 0
 
 func Next_order() Elev_motor_direction_t {
-
-	//if direction_up == true {
-	for floor := current_floor; floor < N_FLOORS; floor++ {
-		if current_floor == 0 && (Order_inner_list[floor] == 1) {
-			return DIRN_UP
-		} else if (IO_read_bit(MOTORDIR) == 0) && (Order_inner_list[floor] == 1) && (floor > current_floor) {
-			return DIRN_UP
-		} else if (Order_inner_list[floor] == 1) && (floor > current_floor) {
-			return DIRN_UP
-		}
-	}
+	var counter_down int = -1
+	var counter_up int = 0
 	for floor := current_floor; floor >= 0; floor-- {
-		if current_floor == 3 && (Order_inner_list[floor] == 1) {
-			return DIRN_DOWN
-		} else if (IO_read_bit(MOTORDIR) == 1) && (Order_inner_list[floor] == 1) && (floor < current_floor) {
-			return DIRN_DOWN
-		} else if (Order_inner_list[floor] == 1) && (floor < current_floor) {
+		if Order_inner_list[floor] == 0 {
+			counter_down++
+		}
+		if counter_down == current_floor {
+			direction = 0
+		}
+		if current_floor == 0 {
+			direction = 0
+		}
+		if (Order_inner_list[floor] == 1) && (floor < current_floor) && (direction != 1) && (counter_down != current_floor) {
+			direction = -1
 			return DIRN_DOWN
 		}
 	}
+
+	for floor := current_floor; floor < N_FLOORS; floor++ {
+
+		if Order_inner_list[floor] == 0 {
+			counter_up++
+		}
+		if counter_up == N_FLOORS-current_floor {
+			direction = 0
+		}
+		if current_floor == 3 {
+			direction = 0
+		}
+		if (Order_inner_list[floor] == 1) && (floor > current_floor) && (direction != -1) && (counter_up != N_FLOORS-current_floor) {
+			direction = 1
+			return DIRN_UP
+		}
+	}
+	//direction = 0
 	return DIRN_STOP
 }
 

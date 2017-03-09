@@ -8,30 +8,22 @@ import (
 
 func Function_state_machine() {
 	Arrived_chan := make(chan bool)
-	//Direction_chan := make(chan Driver.Elev_motor_direction_t)
 	Order_chan := make(chan bool)
 	go Driver.Floor_tracking()
 	go Driver.Order_set_inner_order()
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan)
-	//go Driver.Next_order(Direction_chan)
 	go Driver.Is_arrived(Arrived_chan)
 	//go Driver.Print_queue()
-	//go Driver.JONIOOOOOORRR()
 	for {
 		select {
-		/*case dir := <-Direction_chan:
-		fmt.Println("dir")
-		Driver.Elev_set_motor_dir(dir)*/
 
 		case <-Arrived_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
-			//Driver.Set_order_chan()
-			//Driver.Next_order(Direction_chan)
-
-			//time.Sleep(2 * time.Second)
+			dir = Driver.Next_order()
+			Driver.Elev_set_motor_dir(dir)
 		case <-Order_chan:
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
