@@ -17,7 +17,7 @@ func Function_state_machine() {
 	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan)
-	go Driver.Is_arrived(Arrived_chan)
+	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 	//go Driver.Print_queue()
 	for {

@@ -347,15 +347,6 @@ func Next_order() Elev_motor_direction_t {
 			}
 			return DIRN_DOWN
 		}
-		/*if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][1] == 1)) && (floor > current_floor) && (direction != -1) && (More_orders_up == true) {
-			//More_orders_up = true
-			fmt.Println("riktig")
-			if direction != 1 {
-				direction = 1
-			}
-
-			return DIRN_UP
-		}*/
 	}
 	for floor := current_floor + 1; floor < N_FLOORS; floor++ {
 		if More_orders_up == false {
@@ -381,61 +372,105 @@ func Next_order() Elev_motor_direction_t {
 	return DIRN_STOP
 }
 
-func Is_arrived(Arrived_chan chan bool) {
+func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if IO_read_bit(MOTORDIR) == 0 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Order_inner_list[floor] = 0
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
 				Arrived_chan <- true
+				select {
+				case <-Set_timeout_chan:
+					Order_inner_list[floor] = 0
+					Elev_set_door_open_lamp(false)
+				}
+
 			}
 			if IO_read_bit(MOTORDIR) == 0 && Order_outer_list[floor][0] == 1 && floor == Elev_get_floor_sensor_signal() {
-
-				Order_outer_list[floor][0] = 0
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 				Arrived_chan <- true
+				select {
+				case <-Set_timeout_chan:
+					Order_outer_list[floor][0] = 0
+					Elev_set_door_open_lamp(false)
+				}
 			}
 			if IO_read_bit(MOTORDIR) == 0 && Order_outer_list[floor][1] == 1 && floor == Elev_get_floor_sensor_signal() {
 				if floor == 3 {
-					Order_outer_list[3][1] = 0
 					Elev_set_button_lamp(BUTTON_CALL_DOWN, 3, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[3][1] = 0
+						Elev_set_door_open_lamp(false)
+					}
 				} else if floor == 2 && Order_outer_list[3][1] == 0 {
-					Order_outer_list[2][1] = 0
 					Elev_set_button_lamp(BUTTON_CALL_DOWN, 2, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[2][1] = 0
+						Elev_set_door_open_lamp(false)
+					}
+
 				} else if floor == 1 && Order_outer_list[3][1] == 0 && Order_outer_list[2][1] == 0 {
-					Order_outer_list[1][1] = 0
 					Elev_set_button_lamp(BUTTON_CALL_DOWN, 1, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[1][1] = 0
+						Elev_set_door_open_lamp(false)
+					}
+
 				}
 			}
-
 		}
 		for floor := N_FLOORS - 1; floor >= 0; floor-- {
 			if IO_read_bit(MOTORDIR) == 1 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Order_inner_list[floor] = 0
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
 				Arrived_chan <- true
+				select {
+				case <-Set_timeout_chan:
+					Order_inner_list[floor] = 0
+					Elev_set_door_open_lamp(false)
+				}
 			}
 			if IO_read_bit(MOTORDIR) == 1 && Order_outer_list[floor][1] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Order_outer_list[floor][1] = 0
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
 				Arrived_chan <- true
+				select {
+				case <-Set_timeout_chan:
+					Order_outer_list[floor][1] = 0
+					Elev_set_door_open_lamp(false)
+				}
+
 			}
 			if IO_read_bit(MOTORDIR) == 1 && Order_outer_list[floor][0] == 1 && floor == Elev_get_floor_sensor_signal() {
 				if floor == 0 {
-					Order_outer_list[0][0] = 0
 					Elev_set_button_lamp(BUTTON_CALL_UP, 0, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[0][0] = 0
+						Elev_set_door_open_lamp(false)
+					}
+
 				} else if floor == 1 && Order_outer_list[0][0] == 0 {
-					Order_outer_list[1][0] = 0
 					Elev_set_button_lamp(BUTTON_CALL_UP, 1, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[1][0] = 0
+						Elev_set_door_open_lamp(false)
+					}
+
 				} else if floor == 2 && Order_outer_list[2][0] == 0 && Order_outer_list[1][0] == 0 {
-					Order_outer_list[2][0] = 0
 					Elev_set_button_lamp(BUTTON_CALL_UP, 2, 0)
 					Arrived_chan <- true
+					select {
+					case <-Set_timeout_chan:
+						Order_outer_list[2][0] = 0
+						Elev_set_door_open_lamp(false)
+					}
 				}
 			}
 		}
