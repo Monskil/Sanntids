@@ -2,6 +2,7 @@ package FSM
 
 import (
 	"../Driver"
+	"../Timer"
 	//"fmt"
 	//"time"
 )
@@ -9,11 +10,15 @@ import (
 func Function_state_machine() {
 	Arrived_chan := make(chan bool)
 	Order_chan := make(chan bool)
+	Set_timeout_chan := make(chan bool)
+	Set_timer_chan := make(chan bool)
 	go Driver.Floor_tracking()
 	go Driver.Order_set_inner_order()
+	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan)
 	go Driver.Is_arrived(Arrived_chan)
+	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 	//go Driver.Print_queue()
 	for {
 		select {
@@ -24,9 +29,15 @@ func Function_state_machine() {
 			Driver.Elev_set_motor_dir(dir)
 			dir = Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
+			Set_timer_chan <- true
+			Driver.Elev_set_door_open_lamp(true)
+			//Driver.Time_var = int(time.After(3 * time.Second))
 		case <-Order_chan:
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
+		case <-Set_timeout_chan:
+			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
+			Driver.Elev_set_door_open_lamp(false)
 
 		}
 	}

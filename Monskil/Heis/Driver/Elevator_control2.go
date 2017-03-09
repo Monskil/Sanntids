@@ -11,6 +11,7 @@ import (
 	"fmt"
 	//"runtime"
 	//"time"
+	//"../FSM"
 )
 
 const N_FLOORS int = 4
@@ -220,18 +221,30 @@ func Go_to_buttons(Button_chan chan bool) {
 	}
 }
 
+//var Time_var int = 0
+
 func Register_button(Order_chan chan bool) {
 
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] {
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+				// if Time_var != 0 {
+				// 	Order_chan <- true
+				// }
 				Order_chan <- true
 			} else if Check_all_buttons() == Button_channel_matrix[floor][1] {
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+				// if Time_var != 0 {
+				// 	Order_chan <- true
+				// }
+
 				Order_chan <- true
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+				// if Time_var != 0 {
+				// 	Order_chan <- true
+				// }
 				Order_chan <- true
 			}
 		}
@@ -266,24 +279,19 @@ func JUNIORRRR_aka_Order_complete(floor int, Floor_chan chan bool) {
 
 }
 
-var Order_outer_list = [N_FLOORS][N_BUTTONS - 1]int{
-	{0, 0}, //Venstre kolonne er "Opp", høyre er "Ned"
-	{0, 0},
-	{0, 0},
-	{0, 0},
-}
-
 var Order_inner_list = [4]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
 
 func Order_set_outer_order() {
-	for floor := 0; floor < N_FLOORS-1; floor++ {
-		if Check_all_buttons() == Button_channel_matrix[floor][0] {
-			Order_outer_list[floor][0] = 1
+	for {
+		for floor := 0; floor < N_FLOORS-1; floor++ {
+			if Check_all_buttons() == Button_channel_matrix[floor][0] {
+				Order_outer_list[floor][0] = 1
+			}
 		}
-	}
-	for floor := 1; floor < N_FLOORS; floor++ {
-		if Check_all_buttons() == Button_channel_matrix[floor][1] {
-			Order_outer_list[floor][1] = 1
+		for floor := 1; floor < N_FLOORS; floor++ {
+			if Check_all_buttons() == Button_channel_matrix[floor][1] {
+				Order_outer_list[floor][1] = 1
+			}
 		}
 	}
 }
@@ -300,78 +308,68 @@ func Order_set_inner_order() {
 
 /////////////MANN ER GUL/////////////
 
-/*func JONIOOOOOORRR() {
-	for {
-		for floor := current_floor; floor < N_FLOORS; floor++ {
-			if Order_inner_list[floor] == 1 {
-				direction_up = true
-			} else {
-				direction_up = false
-			}
-		}
-		}
-		}
-
-		func JONIOOOOOORRR_2(Dir_up_chan chan bool, Dir_down_chan chan bool) {
-			for {
-		for floor := current_floor; floor >= 0; floor-- {
-			if Order_inner_list[floor] == 1 {
-				direction_up = false
-			} else {
-				direction_up = true
-			}
-		}
-	}
-}*/
-/*func Set_elev_direction() int {
-
-	if direction == 0 {
-
-	} else if direction == 1 {
-
-	} else if direction == -1 {
-
-	}
+var Order_outer_list = [N_FLOORS][N_BUTTONS - 1]int{
+	{0, 0 /*FINNES IKKE*/}, //Venstre kolonne er "Opp", høyre er "Ned"
+	{0, 0},
+	{0, 0},
+	{0 /*FINNES IKKE*/, 0},
 }
-*/
 var direction int = 0
 
 func Next_order() Elev_motor_direction_t {
-	var counter_down int = -1
-	var counter_up int = 0
-	for floor := current_floor; floor >= 0; floor-- {
-		if Order_inner_list[floor] == 0 {
-			counter_down++
+	//Sjekke bestillinger over
+	var More_orders_up bool = false
+	for floor := current_floor + 1; floor < N_FLOORS; floor++ {
+		if Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1 || Order_inner_list[floor] == 1 {
+			More_orders_up = true
 		}
-		if counter_down == current_floor {
-			direction = 0
+	}
+	//sjekke bestillinger under
+	var More_orders_down bool = false
+	for floor := current_floor - 1; floor >= 0; floor-- {
+		if Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1 || Order_inner_list[floor] == 1 {
+			More_orders_down = true
+		}
+	}
+	for floor := current_floor - 1; floor >= 0; floor-- {
+		if More_orders_down == false {
+			if direction != 0 {
+				direction = 0
+			}
 		}
 		if current_floor == 0 {
-			direction = 0
+			if direction != 0 {
+				direction = 0
+			}
+			IO_clear_bit(MOTORDIR)
 		}
-		if (Order_inner_list[floor] == 1) && (floor < current_floor) && (direction != 1) && (counter_down != current_floor) {
-			direction = -1
+		if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][0] == 1) || (Order_outer_list[floor][1] == 1)) && (floor < current_floor) && (direction != 1) && (More_orders_down == true /*counter_down_inner != current_floor*/) {
+			if direction != -1 {
+				direction = -1
+			}
 			return DIRN_DOWN
 		}
 	}
-
-	for floor := current_floor; floor < N_FLOORS; floor++ {
-
-		if Order_inner_list[floor] == 0 {
-			counter_up++
-		}
-		if counter_up == N_FLOORS-current_floor {
-			direction = 0
+	for floor := current_floor + 1; floor < N_FLOORS; floor++ {
+		if More_orders_up == false {
+			if direction != 0 {
+				direction = 0
+			}
 		}
 		if current_floor == 3 {
-			direction = 0
+			if direction != 0 {
+				direction = 0
+			}
+			IO_set_bit(MOTORDIR)
 		}
-		if (Order_inner_list[floor] == 1) && (floor > current_floor) && (direction != -1) && (counter_up != N_FLOORS-current_floor) {
-			direction = 1
+		if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][0] == 1) || (Order_outer_list[floor][1] == 1)) && (floor > current_floor) && (direction != -1) && (More_orders_up == true /*counter_up_inner != N_FLOORS-current_floor*/) {
+			if direction != 1 {
+				direction = 1
+			}
 			return DIRN_UP
 		}
 	}
-	//direction = 0
+	direction = 0
 	return DIRN_STOP
 }
 
@@ -380,16 +378,24 @@ func Is_arrived(Arrived_chan chan bool) {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if IO_read_bit(MOTORDIR) == 0 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
 				Order_inner_list[floor] = 0
-				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+				Arrived_chan <- true
+			}
+			if IO_read_bit(MOTORDIR) == 0 && (Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1) && floor == Elev_get_floor_sensor_signal() {
+				Order_outer_list[floor][0] = 0
+				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 				Arrived_chan <- true
 			}
 		}
 		for floor := current_floor; floor >= 0; floor-- {
 			if IO_read_bit(MOTORDIR) == 1 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
 				Order_inner_list[floor] = 0
-				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+				Arrived_chan <- true
+			}
+			if IO_read_bit(MOTORDIR) == 1 && (Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1) && floor == Elev_get_floor_sensor_signal() {
+				Order_outer_list[floor][1] = 0
+				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
 				Arrived_chan <- true
 			}
 		}
@@ -397,7 +403,7 @@ func Is_arrived(Arrived_chan chan bool) {
 }
 
 /////////////GULT ER KULT////////////
-
+/*
 func Test_elev(test_chan chan bool) {
 	if Get_obstruction_signal() == 1 && Elev_get_floor_sensor_signal() != 0 {
 		Elev_set_motor_dir(DIRN_DOWN)
@@ -431,7 +437,7 @@ func Go_to_order(order_chan chan int) {
 			}
 		}
 	}
-}
+}*/
 
 func Elev_is_outer_orders() int {
 	for floor := 0; floor < N_FLOORS; floor++ {
@@ -487,7 +493,7 @@ func Order_handling(floor int) {
 
 func Print_queue() {
 	for {
-		fmt.Println(Order_inner_list)
+		fmt.Println(Order_outer_list)
 	}
 }
 
