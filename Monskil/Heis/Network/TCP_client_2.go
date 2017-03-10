@@ -44,7 +44,6 @@ func Orders_to_string_1() string {
 		}
 	}
 	return Orders
-
 }
 
 func Orders_to_string_2() string {
@@ -88,9 +87,8 @@ func main() {
 	// connect to this socket
 	conn, _ := net.Dial("tcp", "localhost:1201")
 	for {
-		// send to socket
-		//fmt.Println(Orders_to_string_1())
-		fmt.Fprintf(conn, Orders_to_string_1())
+		fmt.Println(Orders_to_string_2())
+		fmt.Fprintf(conn, Orders_to_string_2())
 	}
 }
 

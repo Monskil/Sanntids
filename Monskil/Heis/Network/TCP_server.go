@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"../Driver"
+	"bufio"
 	"fmt"
 	"net"
 	"os"
@@ -47,52 +47,107 @@ func String_to_orders(Orders1 string) [4][3]int {
 	return Orders_list
 }
 
+var allClients map[*Client]int
+
+type Client struct {
+	// incoming chan string
+	outgoing   chan string
+	reader     *bufio.Reader
+	writer     *bufio.Writer
+	conn       net.Conn
+	connection *Client
+}
+
+func (client *Client) Read() {
+	for {
+		line, err := client.reader.ReadString('\n')
+		if err == nil {
+			if client.connection != nil {
+				client.connection.outgoing <- line
+			}
+			fmt.Println(line)
+		} else {
+			break
+		}
+
+	}
+
+	client.conn.Close()
+	delete(allClients, client)
+	if client.connection != nil {
+		client.connection.connection = nil
+	}
+	client = nil
+}
+
+func (client *Client) Write() {
+	for data := range client.outgoing {
+		client.writer.WriteString(data)
+		client.writer.Flush()
+	}
+}
+
+func (client *Client) Listen() {
+	go client.Read()
+	go client.Write()
+}
+
+func NewClient(connection net.Conn) *Client {
+	writer := bufio.NewWriter(connection)
+	reader := bufio.NewReader(connection)
+
+	client := &Client{
+		// incoming: make(chan string),
+		outgoing: make(chan string),
+		conn:     connection,
+		reader:   reader,
+		writer:   writer,
+	}
+	client.Listen()
+
+	return client
+}
+
 func main() {
-
-	service := ":1201"
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
-	checkError(err)
-
-	listener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err)
-
+	allClients = make(map[*Client]int)
+	listener, _ := net.Listen("tcp", ":1201")
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			continue
+			fmt.Println(err.Error())
 		}
-		handleClient(conn)
-		conn.Close() // we're finished
+
+		client := NewClient(conn)
+		for clientList, _ := range allClients {
+			if clientList.connection == nil {
+				client.connection = clientList
+				clientList.connection = client
+				fmt.Println("Connected")
+			}
+			allClients[client] = 1
+			fmt.Println(len(allClients))
+		}
+		go handleClient(conn)
 	}
 }
 
 func handleClient(conn net.Conn) {
-	var buf [512]byte
-	var buf2 [512]byte
 	for {
-		n, err := conn.Read(buf[0:])
-		if err != nil {
-			return
+		defer conn.Close()
+		var buf [512]byte
+		for {
+			n, err := conn.Read(buf[0:])
+			if err != nil {
+				return
+			}
+			_, err2 := conn.Write(buf[0:n])
+			if err2 != nil {
+				return
+			}
+			var x string = string(buf[0:]) + string('\n')
+			fmt.Println(String_to_orders(x))
 		}
-		//fmt.Println(string(buf[0:]))
-		_, err2 := conn.Write(buf[0:n])
-		if err2 != nil {
-			return
-		}
-		var x string = string(buf[0:])
-		fmt.Println(String_to_orders(x))
 
-		m, err3 := conn.Read(buf2[0:])
-		if err3 != nil {
-			return
-		}
-		//fmt.Println(string(buf[0:]))
-		_, err4 := conn.Write(buf2[0:m])
-		if err4 != nil {
-			return
-		}
-		var x2 string = string(buf2[0:])
-		fmt.Println(String_to_orders(x2))
 	}
 }
 
