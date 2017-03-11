@@ -4,13 +4,17 @@ import (
 	//"./Timer"
 	"./Driver"
 	"./FSM"
-	"fmt"
+	//"./Network"
+	//"fmt"
+
 	//"strings"
 )
 
 func main() {
+
 	Driver.Elev_init()
 	FSM.Function_state_machine()
+
 	//for {
 	//var teststreng string = Orders_to_string()
 	//	var x string = Orders_to_string()

@@ -2,29 +2,43 @@ package FSM
 
 import (
 	"../Driver"
-	//"../Network"
+	"../Network"
 	"../Timer"
-	//"fmt"
+	"fmt"
 	//"time"
 )
+
+//var New_order bool = false
 
 func Function_state_machine() {
 	Arrived_chan := make(chan bool)
 	Order_chan := make(chan bool)
 	Set_timeout_chan := make(chan bool)
 	Set_timer_chan := make(chan bool)
+	//New_order_chan := make(chan bool)
+	//New_order_print_chan := make(chan bool)
+	Order_compare_outer_lists()
 	go Driver.Floor_tracking()
 	go Driver.Order_set_inner_order()
 	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
-	go Driver.Register_button(Order_chan)
+	go Driver.Register_button(Order_chan /*, New_order_chan, New_order_print_chan*/)
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
+	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
+	go Network.Network_server_main( /*New_order*/ )
+	//go Driver.Bursdagskvinn()
+
+	//go Network.Network_client_2_main()
 	//go Driver.Print_queue()
 	for {
 		select {
 
 		case <-Arrived_chan:
+			Order_compare_outer_lists()
+			//New_order_print_chan <- true
+			//New_order_chan <- true
+			//Network.Network_client_main( /*New_order*/ )
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
@@ -34,13 +48,32 @@ func Function_state_machine() {
 			Driver.Elev_set_door_open_lamp(true)
 			//Driver.Time_var = int(time.After(3 * time.Second))
 		case <-Order_chan:
+			Order_compare_outer_lists()
+			//New_order_print_chan <- true
+			//New_order_chan <- true
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
 		case <-Set_timeout_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			Driver.Elev_set_door_open_lamp(false)
-			//Driver.Is_arrived_2()
 
+		}
+	}
+}
+
+func Order_compare_outer_lists() {
+	for {
+		for floor := 0; floor < 4; floor++ {
+			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
+				//fmt.Println("lol")
+				Driver.Elev_test_set_order_outer_list(floor, 0, 0 /*Network.Server_list[floor][0]*/)
+			}
+			fmt.Println("hei")
+			if Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1] {
+				Driver.Elev_test_set_order_outer_list(floor, 1, Network.Server_list[floor][1])
+			} else {
+				return
+			}
 		}
 	}
 }

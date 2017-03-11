@@ -1,11 +1,14 @@
-package main
+package Network
 
 import (
+	//"../Driver"
 	"bufio"
 	"fmt"
 	"net"
 	"os"
 )
+
+///IP_ADRESSE 129.241.187.tall
 
 func String_to_orders(Orders1 string) [4][3]int {
 
@@ -69,9 +72,7 @@ func (client *Client) Read() {
 		} else {
 			break
 		}
-
 	}
-
 	client.conn.Close()
 	delete(allClients, client)
 	if client.connection != nil {
@@ -108,9 +109,10 @@ func NewClient(connection net.Conn) *Client {
 	return client
 }
 
-func main() {
+func Network_server_main( /*New_order bool*/ ) {
 	allClients = make(map[*Client]int)
 	listener, _ := net.Listen("tcp", ":1201")
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -127,14 +129,22 @@ func main() {
 			allClients[client] = 1
 			fmt.Println(len(allClients))
 		}
-		go handleClient(conn)
+		go handleClient(conn /*, New_order*/)
 	}
 }
 
-func handleClient(conn net.Conn) {
+//var lol2 bool = Driver.Bursdagskvinn()
+var Server_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0},
+}
+
+func handleClient(conn net.Conn /*, New_order bool*/) {
 	for {
 		defer conn.Close()
-		var buf [512]byte
+		var buf [12] /*512*/ byte
 		for {
 			n, err := conn.Read(buf[0:])
 			if err != nil {
@@ -144,10 +154,10 @@ func handleClient(conn net.Conn) {
 			if err2 != nil {
 				return
 			}
-			var x string = string(buf[0:]) + string('\n')
-			fmt.Println(String_to_orders(x))
+			var x string = string(buf[0:]) // + string('\n')
+			fmt.Println(x)
+			Server_list = /*fmt.Println(*/ String_to_orders(x) //)
 		}
-
 	}
 }
 

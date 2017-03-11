@@ -12,6 +12,7 @@ import (
 	//"runtime"
 	//"time"
 	//"../FSM"
+	//"../Network"
 )
 
 const N_FLOORS int = 4
@@ -222,28 +223,45 @@ func Go_to_buttons(Button_chan chan bool) {
 }
 
 //var Time_var int = 0
+var New_order_elev bool = false
 
-func Register_button(Order_chan chan bool) {
+/*func Bursdagskvinn() bool {
+	if New_order_elev == true {
+		return true
+	}
+	return false
+}*/
+
+func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_order_print_chan chan bool*/) {
 
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] {
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+				//New_order_print_chan <- true
+				//New_order_chan <- true
+				New_order_elev = true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][1] {
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+				//New_order_print_chan <- true
+				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
+				New_order_elev = true
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+				//New_order_print_chan <- true
+				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
+				New_order_elev = true
 			}
 		}
 		if Get_stop_signal() != 0 {
@@ -291,6 +309,10 @@ func Order_set_outer_order() {
 			}
 		}
 	}
+}
+
+func Elev_test_set_order_outer_list(floor int, button int, value int) {
+	Order_outer_list[floor][button] = value
 }
 
 func Order_set_inner_order() {
@@ -476,6 +498,19 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 		}
 	}
 }
+
+/*
+func Is_new_orders() bool {
+	for floor := 0; floor < N_FLOORS; floor++ {
+		if Order_inner_list[floor] == 1 {
+
+		}
+		if Order_outer_list[floor][0] == {
+
+		}
+	}
+}
+*/
 
 /////////////GULT ER KULT////////////
 /*
