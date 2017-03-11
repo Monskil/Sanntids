@@ -5,7 +5,7 @@ import (
 	"../Network"
 	"../Timer"
 	"fmt"
-	//"time"
+	"time"
 )
 
 //var New_order bool = false
@@ -15,11 +15,12 @@ func Function_state_machine() {
 	Order_chan := make(chan bool)
 	Set_timeout_chan := make(chan bool)
 	Set_timer_chan := make(chan bool)
+	kodd_chan := make(chan bool)
 	//New_order_chan := make(chan bool)
 	//New_order_print_chan := make(chan bool)
 	go Network.Network_server_main( /*New_order*/ )
 	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
-	go Order_compare_outer_lists(Order_chan)
+	go Order_compare_outer_lists(Order_chan, kodd_chan)
 	go Driver.Floor_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
@@ -30,7 +31,7 @@ func Function_state_machine() {
 	//go Driver.Bursdagskvinn()
 
 	//go Network.Network_client_2_main()
-	//go Driver.Print_queue()
+	go Driver.Print_queue()
 	for {
 		select {
 
@@ -56,15 +57,16 @@ func Function_state_machine() {
 		case <-Set_timeout_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			Driver.Elev_set_door_open_lamp(false)
+			//Order_compare_outer_lists(Order_chan, kodd_chan)
+		case <-kodd_chan:
 
 		}
 	}
 }
 
-var mon int = 0
-
-func Order_compare_outer_lists(Order_chan chan bool) {
+func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 	for {
+		time.Sleep(1 * time.Second)
 		for floor := 0; floor < 4; floor++ {
 			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
 				//fmt.Println("lol")
@@ -78,7 +80,7 @@ func Order_compare_outer_lists(Order_chan chan bool) {
 				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 1)
 				Order_chan <- true
 			} else {
-				fmt.Println("")
+				kodd_chan <- true
 			}
 		}
 	}

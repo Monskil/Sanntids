@@ -11,7 +11,7 @@ import (
 ///IP_ADRESSE 129.241.187.tall
 
 func String_to_orders(Orders1 string) [4][3]int {
-
+	//fmt.Println(Orders1)
 	//var Orders int = [12] "000000000000" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
 	var Orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
 		{0, 0, 0},
@@ -47,7 +47,7 @@ func String_to_orders(Orders1 string) [4][3]int {
 			fmt.Println("Button_Command " + string(k) + "has an illegal value")
 		}
 	}
-
+	//fmt.Println(Orders_list)
 	return Orders_list
 }
 
@@ -135,7 +135,7 @@ func Network_server_main( /*New_order bool*/ ) {
 //var lol2 bool = Driver.Bursdagskvinn()
 var Server_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
 	{0, 0, 0},
-	{1, 0, 0},
+	{0, 0, 0},
 	{0, 0, 0},
 	{0, 0, 0},
 }
@@ -156,6 +156,7 @@ func handleClient(conn net.Conn /*, New_order bool*/) {
 			var x string = string(buf[0:]) // + string('\n')
 			//fmt.Println(x)
 			Server_list = /*fmt.Println(*/ String_to_orders(x) //)
+			//fmt.Println(Server_list)
 			//fmt.Println(String_to_orders(x))
 		}
 	}

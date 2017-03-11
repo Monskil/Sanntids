@@ -10,7 +10,7 @@ import (
 	//"../Timer"
 	"fmt"
 	//"runtime"
-	//"time"
+	"time"
 	//"../FSM"
 	//"../Network"
 )
@@ -604,6 +604,7 @@ func Order_handling(floor int) {
 func Print_queue() {
 	for {
 		fmt.Println(Order_outer_list)
+		time.Sleep(1 * time.Second)
 	}
 }
 
