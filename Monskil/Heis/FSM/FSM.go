@@ -17,6 +17,8 @@ func Function_state_machine() {
 	Set_timer_chan := make(chan bool)
 	//New_order_chan := make(chan bool)
 	//New_order_print_chan := make(chan bool)
+	go Network.Network_server_main( /*New_order*/ )
+	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
 	Order_compare_outer_lists()
 	go Driver.Floor_tracking()
 	go Driver.Order_set_inner_order()
@@ -25,8 +27,6 @@ func Function_state_machine() {
 	go Driver.Register_button(Order_chan /*, New_order_chan, New_order_print_chan*/)
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
-	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
-	go Network.Network_server_main( /*New_order*/ )
 	//go Driver.Bursdagskvinn()
 
 	//go Network.Network_client_2_main()

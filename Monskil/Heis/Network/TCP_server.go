@@ -156,6 +156,7 @@ func handleClient(conn net.Conn /*, New_order bool*/) {
 			var x string = string(buf[0:]) // + string('\n')
 			fmt.Println(x)
 			Server_list = /*fmt.Println(*/ String_to_orders(x) //)
+			fmt.Println(String_to_orders(x))
 		}
 	}
 }
