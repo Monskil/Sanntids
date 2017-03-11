@@ -31,12 +31,12 @@ func Function_state_machine() {
 	//go Driver.Bursdagskvinn()
 
 	//go Network.Network_client_2_main()
-	go Driver.Print_queue()
+	//go Driver.Print_queue()
 	for {
 		select {
 
 		case <-Arrived_chan:
-			//Order_compare_outer_lists()
+			//Order_compare_outer_lists(Order_chan, kodd_chan)
 			//New_order_print_chan <- true
 			//New_order_chan <- true
 			//Network.Network_client_main( /*New_order*/ )
@@ -66,22 +66,27 @@ func Function_state_machine() {
 
 func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(15 * time.Second)
+		counter := 0
 		for floor := 0; floor < 4; floor++ {
 			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
 				//fmt.Println("lol")
 				Driver.Elev_test_set_order_outer_list(floor, 0, Network.Server_list[floor][0])
 				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 1)
-				Order_chan <- true
+				counter++
+
 			}
 			//fmt.Println("hei")
 			if Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1] {
 				Driver.Elev_test_set_order_outer_list(floor, 1, Network.Server_list[floor][1])
 				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 1)
-				Order_chan <- true
-			} else {
+				counter++
+			} /*else {
 				kodd_chan <- true
-			}
+			}*/
+		}
+		if counter != 0 {
+			Order_chan <- true
 		}
 	}
 }
