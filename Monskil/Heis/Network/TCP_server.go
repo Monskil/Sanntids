@@ -135,7 +135,7 @@ func Network_server_main( /*New_order bool*/ ) {
 //var lol2 bool = Driver.Bursdagskvinn()
 var Server_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
 	{0, 0, 0},
-	{0, 0, 0},
+	{1, 0, 0},
 	{0, 0, 0},
 	{0, 0, 0},
 }

@@ -69,13 +69,13 @@ func Order_compare_outer_lists(Order_chan chan bool) {
 			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
 				//fmt.Println("lol")
 				Driver.Elev_test_set_order_outer_list(floor, 0, Network.Server_list[floor][0])
-				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 1)
+				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 1)
 				Order_chan <- true
 			}
 			//fmt.Println("hei")
 			if Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1] {
 				Driver.Elev_test_set_order_outer_list(floor, 1, Network.Server_list[floor][1])
-				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 1)
+				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 1)
 				Order_chan <- true
 			} else {
 				fmt.Println("")
