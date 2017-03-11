@@ -112,7 +112,6 @@ func NewClient(connection net.Conn) *Client {
 func Network_server_main( /*New_order bool*/ ) {
 	allClients = make(map[*Client]int)
 	listener, _ := net.Listen("tcp", ":1201")
-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {

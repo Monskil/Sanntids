@@ -51,13 +51,24 @@ func Orders_to_string_1() string {
 
 func Network_client_main( /*New_order bool*/ ) {
 	// connect to this socket
-	conn, _ := net.Dial("tcp", "localhost:1201")
+	conn, err := net.Dial("tcp" /*"129.241.187.152:1201"*/, "localhost:1202")
+	fmt.Println(conn)
+
+	/*var monvar net.Conn = (&{{0xc82005a150}})
+
+	if conn != monvar {
+		fmt.Println("ikke konnekta")
+	}*/
 
 	for {
-		// send to socket
-		//fmt.Println(Orders_to_string_1())
+		if err != nil {
+			fmt.Println("error")
+		} else {
+			// send to socket
+			//fmt.Println(Orders_to_string_1())
 
-		fmt.Fprintf(conn, Orders_to_string_1())
+			fmt.Fprintf(conn, Orders_to_string_1())
+		}
 	}
 }
 
