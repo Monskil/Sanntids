@@ -47,6 +47,7 @@ func String_to_orders(Orders1 string) [4][3]int {
 			fmt.Println("Button_Command " + string(k) + "has an illegal value")
 		}
 	}
+
 	return Orders_list
 }
 
@@ -105,7 +106,6 @@ func NewClient(connection net.Conn) *Client {
 		writer:   writer,
 	}
 	client.Listen()
-
 	return client
 }
 
@@ -154,9 +154,9 @@ func handleClient(conn net.Conn /*, New_order bool*/) {
 				return
 			}
 			var x string = string(buf[0:]) // + string('\n')
-			fmt.Println(x)
+			//fmt.Println(x)
 			Server_list = /*fmt.Println(*/ String_to_orders(x) //)
-			fmt.Println(String_to_orders(x))
+			//fmt.Println(String_to_orders(x))
 		}
 	}
 }

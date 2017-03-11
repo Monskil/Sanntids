@@ -19,13 +19,13 @@ func Function_state_machine() {
 	//New_order_print_chan := make(chan bool)
 	go Network.Network_server_main( /*New_order*/ )
 	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
-	Order_compare_outer_lists()
+	go Order_compare_outer_lists(Order_chan)
 	go Driver.Floor_tracking()
+	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
 	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan /*, New_order_chan, New_order_print_chan*/)
-	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 	//go Driver.Bursdagskvinn()
 
@@ -35,7 +35,7 @@ func Function_state_machine() {
 		select {
 
 		case <-Arrived_chan:
-			Order_compare_outer_lists()
+			//Order_compare_outer_lists()
 			//New_order_print_chan <- true
 			//New_order_chan <- true
 			//Network.Network_client_main( /*New_order*/ )
@@ -48,7 +48,7 @@ func Function_state_machine() {
 			Driver.Elev_set_door_open_lamp(true)
 			//Driver.Time_var = int(time.After(3 * time.Second))
 		case <-Order_chan:
-			Order_compare_outer_lists()
+			//Order_compare_outer_lists()
 			//New_order_print_chan <- true
 			//New_order_chan <- true
 			dir := Driver.Next_order()
@@ -61,21 +61,30 @@ func Function_state_machine() {
 	}
 }
 
-func Order_compare_outer_lists() {
+var mon int = 0
+
+func Order_compare_outer_lists(Order_chan chan bool) {
 	for {
 		for floor := 0; floor < 4; floor++ {
 			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
 				//fmt.Println("lol")
-				Driver.Elev_test_set_order_outer_list(floor, 0, 0 /*Network.Server_list[floor][0]*/)
+				Driver.Elev_test_set_order_outer_list(floor, 0, Network.Server_list[floor][0])
+				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 1)
+				Order_chan <- true
 			}
-			fmt.Println("hei")
+			//fmt.Println("hei")
 			if Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1] {
 				Driver.Elev_test_set_order_outer_list(floor, 1, Network.Server_list[floor][1])
+				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 1)
+				Order_chan <- true
 			} else {
-				return
+				fmt.Println("")
 			}
 		}
 	}
+}
+func SLETT_DENNE() {
+	fmt.Println("SLETT DEN DAA")
 }
 
 /*

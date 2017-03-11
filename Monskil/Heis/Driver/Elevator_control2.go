@@ -66,6 +66,7 @@ func Elev_init() (int, error) {
 	Elev_set_floor_indicator(0)
 	current_floor = 0
 	direction = 0
+	fmt.Println("Initialization successfull")
 	return 0, nil
 }
 
@@ -312,6 +313,7 @@ func Order_set_outer_order() {
 }
 
 func Elev_test_set_order_outer_list(floor int, button int, value int) {
+	//fmt.Println("ja")
 	Order_outer_list[floor][button] = value
 }
 

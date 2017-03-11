@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 	//"os"
-	//"time"
+	"time"
 )
 
 func Orders_to_string_1() string {
@@ -51,8 +51,8 @@ func Orders_to_string_1() string {
 
 func Network_client_main( /*New_order bool*/ ) {
 	// connect to this socket
-	conn, err := net.Dial("tcp" /*"129.241.187.152:1201"*/, "localhost:1201")
-	fmt.Println(conn)
+	conn, err := net.Dial("tcp" /*, "129.241.187.152:1201"*/, "localhost:1201")
+	//fmt.Println(conn)
 
 	/*var monvar net.Conn = (&{{0xc82005a150}})
 
@@ -65,8 +65,8 @@ func Network_client_main( /*New_order bool*/ ) {
 			//fmt.Println("error")
 		} else {
 			// send to socket
-			fmt.Println(Orders_to_string_1())
-
+			//fmt.Println(Orders_to_string_1())
+			time.Sleep(500 * time.Millisecond)
 			fmt.Fprintf(conn, Orders_to_string_1())
 		}
 	}
