@@ -15,9 +15,9 @@ func Function_state_machine() {
 	Set_timer_chan := make(chan bool, 100000000)
 
 	go Network.Network_server_main()
-	go Network.Network_server_main_2()
+	//go Network.Network_server_main_2()
 	go Network.Network_client_main()
-	go Network.Network_client_main_2()
+	//go Network.Network_client_main_2()
 	go Order_compare_outer_lists(Order_chan)
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)

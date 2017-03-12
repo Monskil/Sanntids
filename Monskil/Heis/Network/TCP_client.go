@@ -9,25 +9,25 @@ import (
 )
 
 func Orders_to_string_1() string {
-
-	test_inner := [4]int{0, 0, 0, 0}
-	test_outer := [4][2]int{
-		{0, 0},
-		{1, 0},
-		{0, 0},
-		{0, 0},
-	}
-
+	/*
+		test_inner := [4]int{0, 0, 0, 0}
+		test_outer := [4][2]int{
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{0, 0},
+		}
+	*/
 	var Orders string = "" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
-		if /*Driver.Order_outer_list[floor][0] */ test_outer[floor][0] == 1 {
+		if Driver.Order_outer_list[floor][0] /* test_outer[floor][0] */ == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
 		}
 	}
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
-		if /*Driver.Order_outer_list[floor][1] */ test_outer[floor][1] == 1 {
+		if Driver.Order_outer_list[floor][1] /* test_outer[floor][1] */ == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
@@ -35,7 +35,7 @@ func Orders_to_string_1() string {
 	}
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
 
-		if /*Driver.Order_inner_list[floor] */ test_inner[floor] == 1 {
+		if Driver.Order_inner_list[floor] /* test_inner[floor]*/ == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
