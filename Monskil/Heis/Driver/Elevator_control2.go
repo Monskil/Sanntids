@@ -497,7 +497,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 						Elev_set_door_open_lamp(false)
 					}
 
-				} else if floor == 2 && Order_outer_list[2][0] == 0 && Order_outer_list[1][0] == 0 {
+				} else if floor == 2 && Order_outer_list[1][0] == 0 && Order_outer_list[0][0] == 0 {
 					Elev_set_button_lamp(BUTTON_CALL_UP, 2, 0)
 					Arrived_chan <- true
 					select {
