@@ -11,11 +11,11 @@ import (
 //var New_order bool = false
 
 func Function_state_machine() {
-	Arrived_chan := make(chan bool)
-	Order_chan := make(chan bool)
-	Set_timeout_chan := make(chan bool)
-	Set_timer_chan := make(chan bool)
-	kodd_chan := make(chan bool)
+	Arrived_chan := make(chan bool, 100000000)
+	Order_chan := make(chan bool, 100000000)
+	Set_timeout_chan := make(chan bool, 100000000)
+	Set_timer_chan := make(chan bool, 100000000)
+	kodd_chan := make(chan bool, 100000000)
 	//New_order_chan := make(chan bool)
 	//New_order_print_chan := make(chan bool)
 	go Network.Network_server_main( /*New_order*/ )
@@ -72,7 +72,7 @@ func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 			if (Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0]) && (Driver.Order_outer_list[floor][0] != 1) {
 				//fmt.Println("lol")
 				//Driver.Elev_test_set_order_outer_list(floor, 0, Network.Server_list[floor][0], Driver.BUTTON_CALL_UP)
-				Driver.Order_outer_list[floor][0] = 0
+				Driver.Order_outer_list[floor][0] = Network.Server_list[floor][0]
 				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
 				counter++
 
@@ -80,7 +80,7 @@ func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 			//fmt.Println("hei")
 			if (Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1]) && (Driver.Order_outer_list[floor][1] != 1) {
 				//Driver.Elev_test_set_order_outer_list(floor, 1, Network.Server_list[floor][1], Driver.BUTTON_CALL_DOWN)
-				Driver.Order_outer_list[floor][1] = 0
+				Driver.Order_outer_list[floor][1] = Network.Server_list[floor][1]
 				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 0)
 
 				counter++
@@ -96,6 +96,7 @@ func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 }
 func SLETT_DENNE() {
 	fmt.Println("SLETT DEN DAA")
+	time.Sleep(1 * time.Second)
 }
 
 /*

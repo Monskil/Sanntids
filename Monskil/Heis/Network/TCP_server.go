@@ -119,7 +119,7 @@ func Network_server_main( /*New_order bool*/ ) {
 		}
 
 		client := NewClient(conn)
-		for clientList, _ := range allClients {
+		for clientList := range allClients {
 			if clientList.connection == nil {
 				client.connection = clientList
 				clientList.connection = client

@@ -50,7 +50,7 @@ func Orders_to_string_1() string {
 
 func Network_client_main( /*New_order bool*/ ) {
 	// connect to this socket
-	conn, err := net.Dial("tcp" /*, "129.241.187.161:1201" */, "localhost:1201")
+	conn, err := net.Dial("tcp", "129.241.187.146:1201" /*, "localhost:1201"*/)
 	//fmt.Println(conn)
 
 	/*var monvar net.Conn = (&{{0xc82005a150}})
@@ -67,7 +67,7 @@ func Network_client_main( /*New_order bool*/ ) {
 			//fmt.Println(Orders_to_string_1())
 			//time.Sleep(500 * time.Millisecond)
 			//fmt.Println(Orders_to_string_1())
-
+			//fmt.Println("Client")
 			time.Sleep(300 * time.Millisecond)
 			fmt.Fprintf(conn, Orders_to_string_1())
 		}
