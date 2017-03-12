@@ -2,33 +2,55 @@ package Network
 
 import "net"
 import "fmt"
+
 import "bufio"
 import "../Driver"
 import "time"
 
-//import "strings"
+var Client_orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
+  {0, 0, 0},
+  {0, 0, 0},
+  {0, 0, 0},
+  {0, 0, 0},
+}
 
-func Client_main() {
+//scp -r Sanntids student@129.241.187.152:~/grr/
+//scp -r Sanntids student@129.241.187.152:~/grr/
 
-  // connect to this socket
-  conn, _ := net.Dial("tcp", "129.241.187.152:8081" /*"localhost:8081"*/)
+func Server_main() {
+
+  fmt.Println("Launching server...")
+
+  // listen on all interfaces
+  ln, _ := net.Listen("tcp", ":8081")
+
+  // accept connection on port
+
+  conn, err := ln.Accept()
+  if err != nil {
+    fmt.Println(err.Error())
+  }
+
+  // run loop forever (or until ctrl-c)
   for {
-    // read in input from stdin
-    /*reader := bufio.NewReader(Orders_to_string_client())
-      fmt.Print("Klient: ")
-      text, _ := reader.ReadString('\n')
-    */
-    // send to socket
-    fmt.Fprintf(conn, Orders_to_string_client())
-    // listen for reply
-    message, _ := bufio.NewReader(conn).ReadString('2')
-    Orders_list = String_to_orders_client(message)
-    //fmt.Print("Message from server: " + message)
-    //time.Sleep(2 * time.Second)
+    // will listen for message to process ending in newline (\n)
+    message, err_2 := bufio.NewReader(conn).ReadString('2')
+    if err_2 != nil {
+      return
+    }
+    // output message received
+    Client_orders_list = String_to_orders(message)
+
+    //Order_compare_outer_lists()
+
+    fmt.Print("from client:" + string(message) + "\n")
+    // sample process for string received
+    // send new string back to client
+    conn.Write([]byte(Orders_to_string_server()))
   }
 }
 
-func Orders_to_string_client() string {
+func Orders_to_string_server() string {
   /*
      test_inner := [4]int{0, 0, 0, 0}
      test_outer := [4][2]int{
@@ -66,14 +88,7 @@ func Orders_to_string_client() string {
 
 }
 
-var Orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
-  {0, 0, 0},
-  {0, 0, 0},
-  {0, 0, 0},
-  {0, 0, 0},
-}
-
-func String_to_orders_client(Orders1 string) [4][3]int {
+func String_to_orders(Orders1 string) [4][3]int {
   //fmt.Println(Orders1)
   //var Orders int = [12] "000000000000" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
   var Orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
@@ -114,19 +129,19 @@ func String_to_orders_client(Orders1 string) [4][3]int {
   return Orders_list
 }
 
-func Order_compare_outer_lists_client() {
+func Order_compare_outer_lists() {
   for {
     time.Sleep(1 * time.Second)
     counter := 0
     for floor := 0; floor < 4; floor++ {
-      if Driver.Order_outer_list[floor][0] != Orders_list[floor][0] && Driver.Order_outer_list[floor][0] != 1 {
-        Driver.Order_outer_list[floor][0] = Orders_list[floor][0]
+      if Driver.Order_outer_list[floor][0] != Client_orders_list[floor][0] && Driver.Order_outer_list[floor][0] != 1 {
+        Driver.Order_outer_list[floor][0] = Client_orders_list[floor][0]
         // Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
         counter++
 
       }
-      if Driver.Order_outer_list[floor][1] != Orders_list[floor][1] && Driver.Order_outer_list[floor][1] != 1 {
-        Driver.Order_outer_list[floor][1] = Orders_list[floor][1]
+      if Driver.Order_outer_list[floor][1] != Client_orders_list[floor][1] && Driver.Order_outer_list[floor][1] != 1 {
+        Driver.Order_outer_list[floor][1] = Client_orders_list[floor][1]
         //Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 0)
         counter++
       }

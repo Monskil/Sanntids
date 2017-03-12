@@ -2,7 +2,7 @@ package FSM
 
 import (
 	"../Driver"
-	"../Network"
+	"../Network_main"
 	"../Timer"
 	"fmt"
 	"time"
@@ -14,9 +14,10 @@ func Function_state_machine() {
 	Set_timeout_chan := make(chan bool, 100000000)
 	Set_timer_chan := make(chan bool, 100000000)
 
-	go Network.Server_main() //Network.Network_server_main()
-	go Network.Client_main() //Network.Network_client_main()
-	go Network.Order_compare_outer_lists()
+	go Network_main.Network_main()
+	//go Network.Server_main() //Network.Network_server_main()
+	//go Network.Client_main() //Network.Network_client_main()
+	//go Network.Order_compare_outer_lists()
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
@@ -24,9 +25,10 @@ func Function_state_machine() {
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
+
 	//go Driver.Bursdagskvinn()
 
-	go Driver.Print_queue()
+	//go Driver.Print_queue()
 	for {
 		select {
 
