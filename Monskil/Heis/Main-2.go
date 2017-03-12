@@ -6,7 +6,6 @@ import (
 	"./FSM"
 	//"./Network"
 	//"fmt"
-
 	//"strings"
 )
 

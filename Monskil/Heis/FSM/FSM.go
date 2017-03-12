@@ -21,7 +21,7 @@ func Function_state_machine() {
 	go Network.Network_server_main( /*New_order*/ )
 	go Network.Network_client_main( /*New_order*/ ) //Network.Network_client_main( /*New_order*/ )
 	go Order_compare_outer_lists(Order_chan, kodd_chan)
-	go Driver.Floor_tracking()
+	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
 	go Driver.Order_set_outer_order()

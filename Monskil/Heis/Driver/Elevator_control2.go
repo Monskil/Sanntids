@@ -179,10 +179,27 @@ func Get_obstruction_signal() int {
 	return IO_read_bit(OBSTRUCTION)
 }
 
-func Floor_tracking() {
+func Lights_tracking() {
 	for {
 		Elev_set_floor_indicator(Elev_get_floor_sensor_signal())
-		//at_floor_chan <- Elev_get_floor_sensor_signal()
+
+		for floor := 0; floor < N_FLOORS; floor++ {
+			if Order_outer_list[floor][0] == 1 {
+				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+			} else {
+				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
+			}
+			if Order_outer_list[floor][1] == 1 {
+				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+			} else {
+				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
+			}
+			if Order_inner_list[floor] == 1 {
+				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+			} else {
+				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+			}
+		}
 	}
 }
 
@@ -242,9 +259,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] {
-				if floor != Elev_get_floor_sensor_signal() {
-					Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
-				}
+				/*if floor != Elev_get_floor_sensor_signal() {
+					//Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+				}*/
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				//New_order_elev = true
@@ -253,9 +270,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				}
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][1] {
-				if floor != Elev_get_floor_sensor_signal() {
-					Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
-				}
+				/*if floor != Elev_get_floor_sensor_signal() {
+					//Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+				}*/
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
@@ -264,9 +281,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				//New_order_elev = true
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
-				if floor != Elev_get_floor_sensor_signal() {
-					Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
-				}
+				/*if floor != Elev_get_floor_sensor_signal() {
+					//Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+				}*/
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
@@ -320,11 +337,13 @@ func Order_set_outer_order() {
 		for floor := 0; floor < N_FLOORS-1; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] && floor != Elev_get_floor_sensor_signal() {
 				Order_outer_list[floor][0] = 1
+
 			}
 		}
 		for floor := 1; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][1] && floor != Elev_get_floor_sensor_signal() {
 				Order_outer_list[floor][1] = 1
+
 			}
 		}
 	}
@@ -343,6 +362,7 @@ func Order_set_inner_order() {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][2] && floor != Elev_get_floor_sensor_signal() {
 				Order_inner_list[floor] = 1
+
 			}
 		}
 	}
@@ -421,7 +441,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if IO_read_bit(MOTORDIR) == 0 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+				//Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
@@ -431,7 +451,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 
 			}
 			if IO_read_bit(MOTORDIR) == 0 && Order_outer_list[floor][0] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
+				//Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
@@ -441,7 +461,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 			}
 			if IO_read_bit(MOTORDIR) == 0 && Order_outer_list[floor][1] == 1 && floor == Elev_get_floor_sensor_signal() {
 				if floor == 3 {
-					Elev_set_button_lamp(BUTTON_CALL_DOWN, 3, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_DOWN, 3, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
@@ -449,7 +469,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 						Elev_set_door_open_lamp(false)
 					}
 				} else if floor == 2 && Order_outer_list[3][1] == 0 {
-					Elev_set_button_lamp(BUTTON_CALL_DOWN, 2, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_DOWN, 2, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
@@ -458,7 +478,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					}
 
 				} else if floor == 1 && Order_outer_list[3][1] == 0 && Order_outer_list[2][1] == 0 {
-					Elev_set_button_lamp(BUTTON_CALL_DOWN, 1, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_DOWN, 1, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
@@ -471,7 +491,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 		}
 		for floor := N_FLOORS - 1; floor >= 0; floor-- {
 			if IO_read_bit(MOTORDIR) == 1 && Order_inner_list[floor] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
+				//Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
@@ -480,7 +500,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 				}
 			}
 			if IO_read_bit(MOTORDIR) == 1 && Order_outer_list[floor][1] == 1 && floor == Elev_get_floor_sensor_signal() {
-				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
+				//Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
@@ -491,7 +511,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 			}
 			if IO_read_bit(MOTORDIR) == 1 && Order_outer_list[floor][0] == 1 && floor == Elev_get_floor_sensor_signal() {
 				if floor == 0 {
-					Elev_set_button_lamp(BUTTON_CALL_UP, 0, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_UP, 0, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
@@ -500,7 +520,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					}
 
 				} else if floor == 1 && Order_outer_list[0][0] == 0 {
-					Elev_set_button_lamp(BUTTON_CALL_UP, 1, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_UP, 1, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
@@ -509,7 +529,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					}
 
 				} else if floor == 2 && Order_outer_list[1][0] == 0 && Order_outer_list[0][0] == 0 {
-					Elev_set_button_lamp(BUTTON_CALL_UP, 2, 0)
+					//Elev_set_button_lamp(BUTTON_CALL_UP, 2, 0)
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
