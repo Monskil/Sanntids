@@ -1,5 +1,4 @@
-package main
-//package driver // where "driver" is the folder that contains io.go, io.c, io.h, channels.go, channels.h and driver.go
+package driver // where "driver" is the folder that contains io.go, io.c, io.h, channels.go, channels.h and driver.go
 /*
 #cgo CFLAGS: -std=c11
 #cgo LDFLAGS: -lcomedi -lm
@@ -147,7 +146,4 @@ var button_channel_matrix := [N_FLOORS][N_BUTTONS]int{
 	{BUTTON_UP4,BUTTON_DOWN4,BUTTON_COMMAND4}
 }
 
-////////////////////////////
-func main(){
-	elev_init()
-}
+

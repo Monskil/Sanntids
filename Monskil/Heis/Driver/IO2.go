@@ -6,7 +6,7 @@ package Driver // where "driver" is the folder that contains io.go, io.c, io.h, 
 */
 import "C"
 
-func IO_init()int{
+func IO_init() int {
 	//return C.io_init()
 	return int(C.io_init())
 }

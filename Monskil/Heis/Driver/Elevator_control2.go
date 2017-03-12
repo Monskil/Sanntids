@@ -233,6 +233,10 @@ var New_order_elev bool = false
 	return false
 }*/
 
+func Set_new_order_var() {
+	New_order_elev = true
+}
+
 func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_order_print_chan chan bool*/) {
 
 	for {
@@ -241,7 +245,7 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
 				//New_order_print_chan <- true
 				//New_order_chan <- true
-				New_order_elev = true
+				//New_order_elev = true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
@@ -253,7 +257,7 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
-				New_order_elev = true
+				//New_order_elev = true
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
 				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
@@ -262,8 +266,14 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
 					Order_chan <- true
 				}
-				New_order_elev = true
+				//New_order_elev = true
 			}
+
+			if New_order_elev == true {
+				New_order_elev = false
+				Order_chan <- true
+			}
+
 		}
 		if Get_stop_signal() != 0 {
 			Elev_set_stop_lamp(true)

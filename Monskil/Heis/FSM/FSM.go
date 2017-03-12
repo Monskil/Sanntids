@@ -66,7 +66,7 @@ func Function_state_machine() {
 
 func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 	for {
-		time.Sleep(15 * time.Second)
+		time.Sleep(1 * time.Second)
 		counter := 0
 		for floor := 0; floor < 4; floor++ {
 			if Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0] {
@@ -86,7 +86,8 @@ func Order_compare_outer_lists(Order_chan chan bool, kodd_chan chan bool) {
 			}*/
 		}
 		if counter != 0 {
-			Order_chan <- true
+			Driver.Set_new_order_var()
+			//Order_chan <- true
 		}
 	}
 }
