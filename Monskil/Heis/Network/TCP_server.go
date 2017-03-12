@@ -10,46 +10,46 @@ import (
 
 ///IP_ADRESSE 129.241.187.tall
 
-func String_to_orders(Orders1 string) [4][3]int {
-	//fmt.Println(Orders1)
-	//var Orders int = [12] "000000000000" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
-	var Orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-	}
-	//fmt.Println(Orders1)
-	for i := 0; i < 4; i++ {
-		if Orders1[i] == byte(49) {
-			Orders_list[i][0] = 1
-		} else if Orders1[i] == byte(48) {
-			Orders_list[i][0] = 0
-		} else {
-			fmt.Println("Button_Up " + string(i) + " has an illegal value")
-		}
-	}
-	for j := 4; j < 8; j++ {
-		if Orders1[j] == byte(49) {
-			Orders_list[j-4][1] = 1
-		} else if Orders1[j] == byte(48) {
-			Orders_list[j-4][1] = 0
-		} else {
-			fmt.Println("Button_Down " + string(j) + " has an illegal value")
-		}
-	}
-	for k := 8; k < 12; k++ {
-		if Orders1[k] == byte(49) {
-			Orders_list[k-8][2] = 1
-		} else if Orders1[k] == byte(48) {
-			Orders_list[k-8][2] = 0
-		} else {
-			fmt.Println("Button_Command " + string(k) + "has an illegal value")
-		}
-	}
-	//fmt.Println(Orders_list)
-	return Orders_list
-}
+// /*func String_to_orders(Orders1 string) [4][3]int {
+// 	//fmt.Println(Orders1)
+// 	//var Orders int = [12] "000000000000" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
+// 	var Orders_list = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
+// 		{0, 0, 0},
+// 		{0, 0, 0},
+// 		{0, 0, 0},
+// 		{0, 0, 0},
+// 	}
+// 	//fmt.Println(Orders1)
+// 	for i := 0; i < 4; i++ {
+// 		if Orders1[i] == byte(49) {
+// 			Orders_list[i][0] = 1
+// 		} else if Orders1[i] == byte(48) {
+// 			Orders_list[i][0] = 0
+// 		} else {
+// 			fmt.Println("Button_Up " + string(i) + " has an illegal value")
+// 		}
+// 	}
+// 	for j := 4; j < 8; j++ {
+// 		if Orders1[j] == byte(49) {
+// 			Orders_list[j-4][1] = 1
+// 		} else if Orders1[j] == byte(48) {
+// 			Orders_list[j-4][1] = 0
+// 		} else {
+// 			fmt.Println("Button_Down " + string(j) + " has an illegal value")
+// 		}
+// 	}
+// 	for k := 8; k < 12; k++ {
+// 		if Orders1[k] == byte(49) {
+// 			Orders_list[k-8][2] = 1
+// 		} else if Orders1[k] == byte(48) {
+// 			Orders_list[k-8][2] = 0
+// 		} else {
+// 			fmt.Println("Button_Command " + string(k) + "has an illegal value")
+// 		}
+// 	}
+// 	//fmt.Println(Orders_list)
+// 	return Orders_list
+// }
 
 var allClients map[*Client]int
 
@@ -112,8 +112,8 @@ func NewClient(connection net.Conn) *Client {
 func Network_server_main( /*New_order bool*/ ) {
 	allClients = make(map[*Client]int)
 	listener, _ := net.Listen("tcp", ":1201")
+	conn, err := listener.Accept()
 	for {
-		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -127,6 +127,7 @@ func Network_server_main( /*New_order bool*/ ) {
 			}
 			allClients[client] = 1
 			fmt.Println(len(allClients))
+			conn.Write([]byte(Orders_to_string()))
 		}
 		go handleClient(conn /*, New_order*/)
 	}
@@ -154,7 +155,7 @@ func handleClient(conn net.Conn /*, New_order bool*/) {
 				return
 			}
 			var x string = string(buf[0:]) // + string('\n')
-			fmt.Println(x)
+			fmt.Println("Server: " + x)
 			Server_list = /*fmt.Println(*/ String_to_orders(x) //)
 			//fmt.Println(Server_list)
 			//fmt.Println(String_to_orders(x))

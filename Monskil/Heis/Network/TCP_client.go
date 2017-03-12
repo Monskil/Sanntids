@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net"
 	//"os"
+	"bufio"
 	"time"
 )
 
-func Orders_to_string_1() string {
+func Orders_to_string() string {
 	/*
 		test_inner := [4]int{0, 0, 0, 0}
 		test_outer := [4][2]int{
@@ -53,9 +54,8 @@ func Orders_to_string_1() string {
 //LABPLASS 16 = 147
 func Network_client_main( /*New_order bool*/ ) {
 	// connect to this socket
-	conn, err := net.Dial("tcp" /*,"129.241.187.142:1201" */, "localhost:1201")
 	//fmt.Println(conn)
-
+	//time.Sleep(5 * time.Second)
 	/*var monvar net.Conn = (&{{0xc82005a150}})
 
 	if conn != monvar {
@@ -63,16 +63,20 @@ func Network_client_main( /*New_order bool*/ ) {
 	}*/
 
 	for {
+		conn, err := net.Dial("tcp" /*, "129.241.187.142:8081" */, "localhost:1201")
 		if err != nil {
 			//fmt.Println("error")
 		} else {
+
 			// send to socket
 			//fmt.Println(Orders_to_string_1())
 			//time.Sleep(500 * time.Millisecond)
 			//fmt.Println(Orders_to_string_1())
 			//fmt.Println("Client")
 			time.Sleep(300 * time.Millisecond)
-			fmt.Fprintf(conn, Orders_to_string_1())
+			fmt.Fprintf(conn, Orders_to_string())
+			message, _ := bufio.NewReader(conn).ReadString('\n')
+			fmt.Println("klient: " + message)
 		}
 	}
 }

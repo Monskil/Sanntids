@@ -294,8 +294,8 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 
 			if New_order_elev == true {
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
-					Order_chan <- true
 					New_order_elev = false
+					Order_chan <- true
 				}
 			}
 

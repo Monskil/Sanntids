@@ -14,11 +14,9 @@ func Function_state_machine() {
 	Set_timeout_chan := make(chan bool, 100000000)
 	Set_timer_chan := make(chan bool, 100000000)
 
-	go Network.Network_server_main()
-	//go Network.Network_server_main_2()
-	go Network.Network_client_main()
-	//go Network.Network_client_main_2()
-	go Order_compare_outer_lists(Order_chan)
+	go Network.Server_main() //Network.Network_server_main()
+	go Network.Client_main() //Network.Network_client_main()
+	go Network.Order_compare_outer_lists()
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
@@ -28,7 +26,7 @@ func Function_state_machine() {
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 	//go Driver.Bursdagskvinn()
 
-	//go Driver.Print_queue()
+	go Driver.Print_queue()
 	for {
 		select {
 
@@ -50,28 +48,6 @@ func Function_state_machine() {
 	}
 }
 
-func Order_compare_outer_lists(Order_chan chan bool) {
-	for {
-		time.Sleep(1 * time.Second)
-		counter := 0
-		for floor := 0; floor < 4; floor++ {
-			if (Driver.Order_outer_list[floor][0] != Network.Server_list[floor][0]) && (Driver.Order_outer_list[floor][0] != 1) {
-				Driver.Order_outer_list[floor][0] = Network.Server_list[floor][0]
-				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
-				counter++
-
-			}
-			if (Driver.Order_outer_list[floor][1] != Network.Server_list[floor][1]) && (Driver.Order_outer_list[floor][1] != 1) {
-				Driver.Order_outer_list[floor][1] = Network.Server_list[floor][1]
-				Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 0)
-				counter++
-			}
-		}
-		if counter != 0 {
-			Driver.Set_new_order_var()
-		}
-	}
-}
 func SLETT_DENNE() {
 	fmt.Println("SLETT DEN DAA")
 	time.Sleep(1 * time.Second)
