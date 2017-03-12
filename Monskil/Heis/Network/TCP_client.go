@@ -67,7 +67,8 @@ func Network_client_main( /*New_order bool*/ ) {
 			//fmt.Println(Orders_to_string_1())
 			//time.Sleep(500 * time.Millisecond)
 			//fmt.Println(Orders_to_string_1())
-			time.Sleep(500 * time.Millisecond)
+
+			time.Sleep(300 * time.Millisecond)
 			fmt.Fprintf(conn, Orders_to_string_1())
 		}
 	}

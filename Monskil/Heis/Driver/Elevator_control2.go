@@ -242,7 +242,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] {
-				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+				if floor != Elev_get_floor_sensor_signal() {
+					Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
+				}
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				//New_order_elev = true
@@ -251,7 +253,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				}
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][1] {
-				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+				if floor != Elev_get_floor_sensor_signal() {
+					Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
+				}
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
@@ -260,7 +264,9 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 				//New_order_elev = true
 
 			} else if Check_all_buttons() == Button_channel_matrix[floor][2] {
-				Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+				if floor != Elev_get_floor_sensor_signal() {
+					Elev_set_button_lamp(BUTTON_COMMAND, floor, 1)
+				}
 				//New_order_print_chan <- true
 				//New_order_chan <- true
 				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
@@ -270,8 +276,10 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 			}
 
 			if New_order_elev == true {
-				New_order_elev = false
-				Order_chan <- true
+				if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
+					Order_chan <- true
+					New_order_elev = false
+				}
 			}
 
 		}
@@ -310,27 +318,30 @@ var Order_inner_list = [4]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
 func Order_set_outer_order() {
 	for {
 		for floor := 0; floor < N_FLOORS-1; floor++ {
-			if Check_all_buttons() == Button_channel_matrix[floor][0] {
+			if Check_all_buttons() == Button_channel_matrix[floor][0] && floor != Elev_get_floor_sensor_signal() {
 				Order_outer_list[floor][0] = 1
 			}
 		}
 		for floor := 1; floor < N_FLOORS; floor++ {
-			if Check_all_buttons() == Button_channel_matrix[floor][1] {
+			if Check_all_buttons() == Button_channel_matrix[floor][1] && floor != Elev_get_floor_sensor_signal() {
 				Order_outer_list[floor][1] = 1
 			}
 		}
 	}
 }
 
-func Elev_test_set_order_outer_list(floor int, button int, value int) {
+func Elev_test_set_order_outer_list(floor int, button int, value int, button_type Elev_button_type_t) {
 	//fmt.Println("ja")
-	Order_outer_list[floor][button] = value
+	if floor != Elev_get_floor_sensor_signal() {
+		Order_outer_list[floor][button] = value
+		Elev_set_button_lamp(button_type, floor, value)
+	}
 }
 
 func Order_set_inner_order() {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
-			if Check_all_buttons() == Button_channel_matrix[floor][2] {
+			if Check_all_buttons() == Button_channel_matrix[floor][2] && floor != Elev_get_floor_sensor_signal() {
 				Order_inner_list[floor] = 1
 			}
 		}
