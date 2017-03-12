@@ -11,7 +11,7 @@ import "time"
 func Client_main() {
 
   // connect to this socket
-  conn, _ := net.Dial("tcp", "localhost:8081")
+  conn, _ := net.Dial("tcp", "129.241.187.152:8081" /*"localhost:8081"*/)
   for {
     // read in input from stdin
     /*reader := bufio.NewReader(Orders_to_string_client())
