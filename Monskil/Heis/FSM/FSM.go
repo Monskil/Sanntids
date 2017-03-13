@@ -30,7 +30,7 @@ func Function_state_machine() {
 	go Driver.Elev_is_idle(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 
-	//go Driver.Print_queue()
+	go Driver.Print_queue()
 	for {
 		select {
 
@@ -38,8 +38,8 @@ func Function_state_machine() {
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
-			dir = Driver.Next_order()
-			Driver.Elev_set_motor_dir(dir)
+			/*dir = Driver.Next_order()
+			Driver.Elev_set_motor_dir(dir)*/
 			Set_timer_chan <- true
 			Driver.Elev_set_door_open_lamp(true)
 		case <-Order_chan:

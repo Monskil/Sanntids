@@ -538,7 +538,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					}
 				}
 			}
-			time.Sleep(10 * time.Millisecond)
+			//time.Sleep(10 * time.Millisecond)
 		}
 	}
 }

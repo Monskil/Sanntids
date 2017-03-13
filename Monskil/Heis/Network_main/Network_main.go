@@ -110,7 +110,6 @@ func Network_main(Order_chan chan bool) {
 			received_msg = String_to_orders(a.Message) ////////////
 			received_IP = a.IP
 			received_current_floor = a.Current_floor
-			fmt.Println(received_current_floor)
 			received_direction = a.Direction
 			received_is_idle = a.Is_idle
 
@@ -138,9 +137,9 @@ func Network_main(Order_chan chan bool) {
 		//fmt.Println("Direction: ", received_direction)
 		//fmt.Println("No orders: ", received_is_idle)*/
 		fmt.Println("\n")
-		fmt.Println(elev_1)
-		fmt.Println(elev_2)
-		fmt.Println(elev_3)
+		//fmt.Println(elev_1)
+		//fmt.Println(elev_2)
+		//fmt.Println(elev_3)
 
 	}
 }
@@ -286,13 +285,13 @@ func Order_compare_outer_list() {
 		counter := 0
 		localIP, _ := localip.LocalIP()
 		for floor := 0; floor < 4; floor++ {
-			if (Driver.Order_shared_outer_list[floor][0] != received_msg[floor][0]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][0] != 1*/ {
+			if Driver.Order_shared_outer_list[floor][0] != received_msg[floor][0] && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][0] != 1*/ {
 				Driver.Order_shared_outer_list[floor][0] = received_msg[floor][0]
 				// Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
 				counter++
 
 			}
-			if (Driver.Order_shared_outer_list[floor][1] != received_msg[floor][1]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][1] != 1*/ {
+			if Driver.Order_shared_outer_list[floor][1] != received_msg[floor][1] && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][1] != 1*/ {
 				Driver.Order_shared_outer_list[floor][1] = received_msg[floor][1]
 				//Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 0)
 				counter++
@@ -301,6 +300,6 @@ func Order_compare_outer_list() {
 		if counter != 0 {
 			Driver.Set_new_order_var()
 		}
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
