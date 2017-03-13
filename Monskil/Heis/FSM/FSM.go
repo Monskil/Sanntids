@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+//scp -r Heis student@129.241.187.146:~/grr/
+//ssh student@129.241.187.146
+
 func Function_state_machine() {
 	Arrived_chan := make(chan bool, 100000000)
 	Order_chan := make(chan bool, 100000000)
@@ -17,9 +20,10 @@ func Function_state_machine() {
 	go Network_main.Network_main()
 	//go Network.Server_main() //Network.Network_server_main()
 	//go Network.Client_main() //Network.Network_client_main()
-	//go Network.Order_compare_outer_lists()
+	go Network_main.Order_compare_outer_list()
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
+	//go Driver.Go_if(Order_chan)
 	go Driver.Order_set_inner_order()
 	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
