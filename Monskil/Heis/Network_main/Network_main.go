@@ -43,7 +43,7 @@ var num_elevs_online int = 1
 
 ////////////////////////////////
 
-func Network_main() {
+func Network_main(Order_chan chan bool) {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
 	var id string
@@ -87,7 +87,7 @@ func Network_main() {
 		for {
 			current_floor1 := Driver.Current_floor
 			Dir := Driver.IO_read_bit(Driver.MOTORDIR)
-			idle := Driver.Elev_is_idle()
+			idle := Driver.Elev_is_idle(Order_chan)
 			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
 			/*Message.Message := Orders_to_string()
 			Message.IP := 3 //my_ip //////////*/

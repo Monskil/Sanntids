@@ -17,7 +17,7 @@ func Function_state_machine() {
 	Set_timeout_chan := make(chan bool, 100000000)
 	Set_timer_chan := make(chan bool, 100000000)
 
-	go Network_main.Network_main()
+	go Network_main.Network_main(Order_chan)
 	go Network_main.Order_compare_outer_list()
 	go Network_main.Cost_function()
 	go Driver.Lights_tracking()
@@ -26,6 +26,8 @@ func Function_state_machine() {
 	go Driver.Order_set_outer_order()
 	go Driver.Set_current_floor()
 	go Driver.Register_button(Order_chan)
+	//go Driver.Elev_idle_with_order(Order_chan)
+	go Driver.Elev_is_idle(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 
 	//go Driver.Print_queue()

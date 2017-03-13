@@ -295,6 +295,14 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 	}
 }
 
+/*func Elev_idle_with_order(Order_chan chan bool) {
+for floor := 0; floor < N_FLOORS-1; floor++ {
+	if Elev_is_idle() == false /* && (Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1)*/ // {
+/*Order_chan <- true
+		}
+	}
+}*/
+
 var Order_inner_list = [N_FLOORS]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
 
 func Order_set_outer_order() {
@@ -349,9 +357,12 @@ var Order_outer_list = [N_FLOORS][N_BUTTONS - 1]int{
 }
 var Direction int = 0
 
-func Elev_is_idle() bool {
+func Elev_is_idle(Order_chan chan bool) bool {
 	for floor := 0; floor < N_FLOORS; floor++ {
 		if Order_inner_list[floor] == 1 || Order_outer_list[floor][0] == 1 || Order_outer_list[floor][0] == 1 {
+			if IO_read_bit(LIGHT_DOOR_OPEN) == 0 {
+				Order_chan <- true
+			}
 			return false
 		}
 	}
