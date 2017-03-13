@@ -36,7 +36,7 @@ var received_is_idle bool = true
 
 ///////////////////////////////////
 
-var elev_1 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
+var elev_1 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true} //THIS ELEV
 var elev_2 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
 var elev_3 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
 var num_elevs_online int = 1
@@ -94,7 +94,7 @@ func Network_main() {
 			helloTx <- Message
 			//fmt.Println("Current floor: ", current_floor)
 			//fmt.Println("Direction: ", Dir)
-			time.Sleep(1 * time.Second)
+			time.Sleep(500 * time.Millisecond)
 		}
 	}()
 
@@ -110,12 +110,15 @@ func Network_main() {
 			received_msg = String_to_orders(a.Message) ////////////
 			received_IP = a.IP
 			received_current_floor = a.Current_floor
+			fmt.Println(received_current_floor)
 			received_direction = a.Direction
 			received_is_idle = a.Is_idle
 
 			if received_IP == LocalIP {
 				elev_1 = a
 			} else if (received_IP != LocalIP) && (elev_2.IP == "0") {
+				elev_2.IP = received_IP
+			} else if received_IP == elev_2.IP {
 				elev_2 = a
 			} else if (received_IP != LocalIP) && (received_IP != elev_2.IP) {
 				elev_3 = a
@@ -135,22 +138,78 @@ func Network_main() {
 		//fmt.Println("Direction: ", received_direction)
 		//fmt.Println("No orders: ", received_is_idle)*/
 		fmt.Println("\n")
-		fmt.Println(elev_1.IP)
-		fmt.Println(elev_2.IP)
-		fmt.Println(elev_3.IP)
+		fmt.Println(elev_1)
+		fmt.Println(elev_2)
+		fmt.Println(elev_3)
 
 	}
 }
 
-/*
-func shall_me() {
+func Cost_function() {
+	for {
+		time.Sleep(500 * time.Millisecond)
+		var elev_sufficient bool = false
+		//var elev_2_sufficient bool = false
+		//var elev_3_sufficient bool = false
+		var elev_1_difference int = 3
+		var elev_2_difference int = 3
+		var elev_3_difference int = 3
 
-	if  {
+		for floor := 0; floor < Driver.N_FLOORS; floor++ {
 
+			if Driver.Order_shared_outer_list[floor][0] == 1 {
+
+				if num_elevs_online == 1 {
+					Driver.Order_outer_list[floor][0] = 1
+				}
+
+				if elev_1.Direction == 0 && elev_1.Current_floor < floor {
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_sufficient = true
+				}
+				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+					elev_sufficient = false
+				} else {
+					elev_sufficient = true
+				}
+				if elev_sufficient {
+					Driver.Order_outer_list[floor][0] = 1
+					elev_sufficient = false
+				}
+			}
+			if /*Driver.Order_shared_outer_list[floor][0] == 1 ||*/ Driver.Order_shared_outer_list[floor][1] == 1 {
+
+				if num_elevs_online == 1 {
+					Driver.Order_outer_list[floor][1] = 1
+				}
+				if elev_1.Direction == 0 && elev_1.Current_floor < floor {
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_sufficient = true
+				}
+				/*if elev_2.Dir == 0 && elev_1.Current_floor < floor {
+					elev_2_difference = floor - elev_2.Current_floor
+					elev_2_sufficient = true
+				}
+				if elev_3.Dir == 0 && elev_1.Current_floor < floor {
+					elev_3_difference = floor - elev_3.Current_floor
+					elev_3_sufficient = true
+				}*/
+				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+					elev_sufficient = false
+				} else {
+					elev_sufficient = true
+				}
+				if elev_sufficient {
+					Driver.Order_outer_list[floor][1] = 1
+					elev_sufficient = false
+				}
+			}
+
+		}
 	}
 
 }
-*/
+
 func Orders_to_string() string {
 
 	var Orders string = ""
@@ -224,7 +283,6 @@ func String_to_orders(Orders1 string) [4][3]int {
 
 func Order_compare_outer_list() {
 	for {
-		time.Sleep(1 * time.Second)
 		counter := 0
 		localIP, _ := localip.LocalIP()
 		for floor := 0; floor < 4; floor++ {
@@ -243,5 +301,6 @@ func Order_compare_outer_list() {
 		if counter != 0 {
 			Driver.Set_new_order_var()
 		}
+		time.Sleep(500 * time.Millisecond)
 	}
 }

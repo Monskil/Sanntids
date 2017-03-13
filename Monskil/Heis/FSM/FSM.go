@@ -19,6 +19,7 @@ func Function_state_machine() {
 
 	go Network_main.Network_main()
 	go Network_main.Order_compare_outer_list()
+	go Network_main.Cost_function()
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
@@ -27,7 +28,7 @@ func Function_state_machine() {
 	go Driver.Register_button(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
 
-	go Driver.Print_queue()
+	//go Driver.Print_queue()
 	for {
 		select {
 

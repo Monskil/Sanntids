@@ -197,6 +197,7 @@ func Lights_tracking() {
 			}
 		}
 	}
+	time.Sleep(50 * time.Millisecond)
 }
 
 var Lamp_channel_matrix = [N_FLOORS][N_BUTTONS]int{
@@ -493,7 +494,6 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Order_shared_outer_list[floor][1] = 0
 					Elev_set_door_open_lamp(false)
 				}
-
 			}
 			if IO_read_bit(MOTORDIR) == 1 && Order_outer_list[floor][0] == 1 && floor == Elev_get_floor_sensor_signal() {
 				if floor == 0 {
@@ -527,6 +527,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					}
 				}
 			}
+			time.Sleep(10 * time.Millisecond)
 		}
 	}
 }
@@ -550,13 +551,14 @@ func Set_current_floor() {
 		if temp != -1 {
 			Current_floor = temp
 		}
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
 func Order_handling(floor int) {
 
 	for {
-		var Current_floor int = 0 //trenger vi å sette den her? den står uttafor funksjoner i denne filen også
+		//var Current_floor int = 0 //trenger vi å sette den her? den står uttafor funksjoner i denne filen også
 		if Elev_get_floor_sensor_signal() != -1 {
 			Current_floor = Elev_get_floor_sensor_signal()
 		}
@@ -572,7 +574,8 @@ func Order_handling(floor int) {
 
 func Print_queue() {
 	for {
-		fmt.Println(Order_shared_outer_list)
+		fmt.Println("Shared:     ", Order_shared_outer_list)
+		fmt.Println("Egen outer :", Order_outer_list)
 		time.Sleep(1 * time.Second)
 	}
 }
