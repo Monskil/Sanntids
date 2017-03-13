@@ -30,18 +30,14 @@ var received_msg = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
 	{0, 0, 0},
 }
 var received_IP = "0"
-var received_current_floor int = 0 //Driver.Direction //a.current_floor
-var received_direction int = 0     //Driver.Current_floor //a.direction
+var received_current_floor int = 0
+var received_direction int = 0
 var received_is_idle bool = true
-
-///////////////////////////////////
 
 var elev_1 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true} //THIS ELEV
 var elev_2 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
 var elev_3 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
 var num_elevs_online int = 1
-
-//////////////////////////////// DETTTE ER TIL GITTELITT
 
 func Network_main(Order_chan chan bool) {
 	// Our id can be anything. Here we pass it on the command line, using
@@ -151,29 +147,41 @@ func Cost_function() {
 		//var elev_2_sufficient bool = false
 		//var elev_3_sufficient bool = false
 		var elev_1_difference int = 3
-		var elev_2_difference int = 3
-		var elev_3_difference int = 3
+		var elev_2_difference int = 0
+		var elev_3_difference int = 0
 
 		for floor := 0; floor < Driver.N_FLOORS; floor++ {
 
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
-
+				//fmt.Println(":(")
 				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][0] = 1
+					Driver.Order_outer_list[floor][0] = 1 //////////////////////////////////////////////////////////////////////////// <----- HER ER JÆVELEN
 				}
 
-				if elev_1.Direction == 0 && elev_1.Current_floor < floor {
+				if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
 					elev_1_difference = floor - elev_1.Current_floor
-					elev_sufficient = true
+					fmt.Println(elev_1_difference)
+					fmt.Println(elev_2_difference)
+					fmt.Println(elev_3_difference)
+					//elev_sufficient = true
+				}
+				if elev_2.Direction == 0 && elev_2.Current_floor < floor {
+					elev_2_difference = floor - elev_2.Current_floor
+				}
+				if elev_3.Direction == 0 && elev_3.Current_floor < floor {
+					elev_3_difference = floor - elev_3.Current_floor
+
 				}
 				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
 					elev_sufficient = false
-				} else {
+				} /*else {
 					elev_sufficient = true
-				}
+				}*/
 				if elev_sufficient {
 					Driver.Order_outer_list[floor][0] = 1
 					elev_sufficient = false
+				} else {
+					fmt.Println("FALSE IKKE KJØR")
 				}
 			}
 			if /*Driver.Order_shared_outer_list[floor][0] == 1 ||*/ Driver.Order_shared_outer_list[floor][1] == 1 {
