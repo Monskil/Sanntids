@@ -41,7 +41,7 @@ var elev_2 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_
 var elev_3 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
 var num_elevs_online int = 1
 
-////////////////////////////////
+//////////////////////////////// DETTTE ER TIL GITTELITT
 
 func Network_main(Order_chan chan bool) {
 	// Our id can be anything. Here we pass it on the command line, using
