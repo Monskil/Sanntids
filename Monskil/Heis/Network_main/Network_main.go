@@ -34,6 +34,15 @@ var received_current_floor int = 0 //Driver.Direction //a.current_floor
 var received_direction int = 0     //Driver.Current_floor //a.direction
 var received_is_idle bool = true
 
+///////////////////////////////////
+
+var elev_1 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
+var elev_2 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
+var elev_3 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
+var num_elevs_online int = 1
+
+////////////////////////////////
+
 func Network_main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
@@ -71,9 +80,9 @@ func Network_main() {
 	go bcast.Transmitter(16569, helloTx)
 	go bcast.Receiver(16569, helloRx)
 
+	LocalIP, _ := localip.LocalIP()
 	// The example message. We just send one of these every second.
 	go func() {
-		LocalIP, _ := localip.LocalIP()
 
 		for {
 			current_floor1 := Driver.Current_floor
@@ -104,41 +113,56 @@ func Network_main() {
 			received_direction = a.Direction
 			received_is_idle = a.Is_idle
 
+			if received_IP == LocalIP {
+				elev_1 = a
+			} else if (received_IP != LocalIP) && (elev_2.IP == "0") {
+				elev_2 = a
+			} else if (received_IP != LocalIP) && (received_IP != elev_2.IP) {
+				elev_3 = a
+			} //HUSK Å SETTE ALLE MISTEDE HEISER TIL 0 SOM DE STÅR ØVERST I FILEN OG OPPDATERE NUM_ELEVS
+			if elev_3.IP != "0" {
+				num_elevs_online = 3
+			} else if elev_2.IP != "0" {
+				num_elevs_online = 2
+			} else {
+				num_elevs_online = 1
+			}
+
 		}
-		fmt.Println(received_msg)
-		fmt.Println(received_IP)
-		fmt.Println("Current floor: ", received_current_floor)
-		fmt.Println("Direction: ", received_direction)
-		fmt.Println("No orders: ", received_is_idle)
+		//fmt.Println(received_msg)
+		//fmt.Println(received_IP)
+		//fmt.Println("Current floor: ", received_current_floor)
+		//fmt.Println("Direction: ", received_direction)
+		//fmt.Println("No orders: ", received_is_idle)*/
 		fmt.Println("\n")
+		fmt.Println(elev_1.IP)
+		fmt.Println(elev_2.IP)
+		fmt.Println(elev_3.IP)
+
 	}
 }
 
 /*
-func Transmit_orders() {
+func shall_me() {
 
-}*/
+	if  {
 
+	}
+
+}
+*/
 func Orders_to_string() string {
-	/*
-	   test_inner := [4]int{0, 0, 0, 0}
-	   test_outer := [4][2]int{
-	     {0, 0},
-	     {1, 0},
-	     {0, 0},
-	     {0, 0},
-	   }
-	*/
-	var Orders string = "" //UUUUDDDDCCCC (U = orders button_up | D = orders button_down | C = orders button_command)
+
+	var Orders string = ""
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
-		if Driver.Order_outer_list[floor][0] /* test_outer[floor][0] */ == 1 {
+		if Driver.Order_shared_outer_list[floor][0] == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
 		}
 	}
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
-		if Driver.Order_outer_list[floor][1] /* test_outer[floor][1] */ == 1 {
+		if Driver.Order_shared_outer_list[floor][1] == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
@@ -146,7 +170,7 @@ func Orders_to_string() string {
 	}
 	for floor := 0; floor < Driver.N_FLOORS; floor++ {
 
-		if Driver.Order_inner_list[floor] /* test_inner[floor]*/ == 1 {
+		if Driver.Order_inner_list[floor] == 1 {
 			Orders = Orders + "1"
 		} else {
 			Orders = Orders + "0"
@@ -204,14 +228,14 @@ func Order_compare_outer_list() {
 		counter := 0
 		localIP, _ := localip.LocalIP()
 		for floor := 0; floor < 4; floor++ {
-			if (Driver.Order_outer_list[floor][0] != received_msg[floor][0]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][0] != 1*/ {
-				Driver.Order_outer_list[floor][0] = received_msg[floor][0]
+			if (Driver.Order_shared_outer_list[floor][0] != received_msg[floor][0]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][0] != 1*/ {
+				Driver.Order_shared_outer_list[floor][0] = received_msg[floor][0]
 				// Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
 				counter++
 
 			}
-			if (Driver.Order_outer_list[floor][1] != received_msg[floor][1]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][1] != 1*/ {
-				Driver.Order_outer_list[floor][1] = received_msg[floor][1]
+			if (Driver.Order_shared_outer_list[floor][1] != received_msg[floor][1]) && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][1] != 1*/ {
+				Driver.Order_shared_outer_list[floor][1] = received_msg[floor][1]
 				//Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_DOWN, floor, 0)
 				counter++
 			}
@@ -221,10 +245,3 @@ func Order_compare_outer_list() {
 		}
 	}
 }
-
-/*func Shall_i_take_the_order_sent_to_me_by_other_elevators_question_mark(){
-
-	if my_floor nærmere bestilling enn his_floor {
-
-	}
-}*/

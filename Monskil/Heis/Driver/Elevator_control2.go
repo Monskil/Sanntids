@@ -45,10 +45,6 @@ func Elev_init() (int, error) {
 	}
 
 	for floor := 0; floor < N_FLOORS; floor++ {
-		//var b Elev_button_type_t
-		//for b := 0; b < N_BUTTONS; b++ {
-		//Elev_set_button_lamp(b,f,0)
-		//}
 		if floor != 0 {
 			Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
 		}
@@ -184,12 +180,12 @@ func Lights_tracking() {
 		Elev_set_floor_indicator(Elev_get_floor_sensor_signal())
 
 		for floor := 0; floor < N_FLOORS; floor++ {
-			if Order_outer_list[floor][0] == 1 {
+			if Order_shared_outer_list[floor][0] == 1 {
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 1)
 			} else {
 				Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
 			}
-			if Order_outer_list[floor][1] == 1 {
+			if Order_shared_outer_list[floor][1] == 1 {
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1)
 			} else {
 				Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
@@ -240,15 +236,7 @@ func Go_to_buttons(Button_chan chan bool) {
 	}
 }
 
-//var Time_var int = 0
 var New_order_elev bool = false
-
-/*func Bursdagskvinn() bool {
-	if New_order_elev == true {
-		return true
-	}
-	return false
-}*/
 
 func Set_new_order_var() {
 	New_order_elev = true
@@ -306,43 +294,19 @@ func Register_button(Order_chan chan bool /*, New_order_chan chan bool, New_orde
 	}
 }
 
-func JUNIORRRR_aka_Order_complete(floor int, Floor_chan chan bool) {
-	if /*Order_inner_list[floor] == 1 && */ Elev_get_floor_sensor_signal() == floor /*dooropen*/ {
-		fmt.Println("JA")
-		Elev_set_button_lamp(BUTTON_COMMAND, floor, 0)
-		Order_inner_list[floor] = 0
-		fmt.Println(Order_inner_list)
-		Elev_set_motor_dir(DIRN_STOP)
-		//time.Sleep(4 * time.Second)
-		Floor_chan <- true
-	}
-
-	/*
-		if Order_outer_list[floor][0] == 1 && Elev_get_floor_sensor_signal() == floor && IO_read_bit(MOTORDIR) == 0  {
-			Elev_set_button_lamp(BUTTON_CALL_UP, floor, 0)
-			Order_outer_list[floor][0] = 0
-			Floor_chan <- true
-		} else if Order_outer_list[floor][1] == 1 && Elev_get_floor_sensor_signal() == floor && IO_read_bit(MOTORDIR) == 1  {
-			Elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0)
-			Order_outer_list[floor][1] = 0
-			Floor_chan <- true
-		}*/
-
-}
-
-var Order_inner_list = [4]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
+var Order_inner_list = [N_FLOORS]int{0, 0, 0, 0} //command for floor 1, 2, 3, 4
 
 func Order_set_outer_order() {
 	for {
 		for floor := 0; floor < N_FLOORS-1; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][0] && floor != Elev_get_floor_sensor_signal() {
-				Order_outer_list[floor][0] = 1
+				Order_shared_outer_list[floor][0] = 1
 
 			}
 		}
 		for floor := 1; floor < N_FLOORS; floor++ {
 			if Check_all_buttons() == Button_channel_matrix[floor][1] && floor != Elev_get_floor_sensor_signal() {
-				Order_outer_list[floor][1] = 1
+				Order_shared_outer_list[floor][1] = 1
 
 			}
 		}
@@ -352,7 +316,7 @@ func Order_set_outer_order() {
 func Elev_test_set_order_outer_list(floor int, button int, value int, button_type Elev_button_type_t) {
 	//fmt.Println("ja")
 	if floor != Elev_get_floor_sensor_signal() {
-		Order_outer_list[floor][button] = value
+		Order_shared_outer_list[floor][button] = value
 		Elev_set_button_lamp(button_type, floor, value)
 	}
 }
@@ -365,6 +329,13 @@ func Order_set_inner_order() {
 			}
 		}
 	}
+}
+
+var Order_shared_outer_list = [N_FLOORS][N_BUTTONS - 1]int{
+	{0, 0},
+	{0, 0},
+	{0, 0},
+	{0, 0},
 }
 
 /////////////MANN ER GUL/////////////
@@ -447,30 +418,6 @@ func Next_order() Elev_motor_direction_t {
 	return DIRN_STOP
 }
 
-/*
-func Go_if(Order_chan chan bool) {
-	//Sjekke bestillinger over
-	var More_orders_up bool = false
-	for floor := current_floor + 1; floor < N_FLOORS; floor++ {
-		if Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1 || Order_inner_list[floor] == 1 {
-			More_orders_up = true
-		}
-	}
-	//sjekke bestillinger under
-	var More_orders_down bool = false
-	for floor := current_floor - 1; floor >= 0; floor-- {
-		if Order_outer_list[floor][0] == 1 || Order_outer_list[floor][1] == 1 || Order_inner_list[floor] == 1 {
-			More_orders_down = true
-		}
-	}
-
-	if Elev_get_floor_sensor_signal() == 3 && More_orders_down == true && Elev_get_floor_sensor_signal() == 0 {
-		Order_chan <- true
-	} else if Elev_get_floor_sensor_signal() == 0 && More_orders_up == true && Elev_get_floor_sensor_signal() == 0 {
-		Order_chan <- true
-	}
-}*/
-
 func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
@@ -490,6 +437,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 				select {
 				case <-Set_timeout_chan:
 					Order_outer_list[floor][0] = 0
+					Order_shared_outer_list[floor][0] = 0
 					Elev_set_door_open_lamp(false)
 				}
 			}
@@ -500,6 +448,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[3][1] = 0
+						Order_shared_outer_list[3][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 				} else if floor == 2 && Order_outer_list[3][1] == 0 {
@@ -508,6 +457,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[2][1] = 0
+						Order_shared_outer_list[2][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -517,6 +467,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[1][1] = 0
+						Order_shared_outer_list[1][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -539,6 +490,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 				select {
 				case <-Set_timeout_chan:
 					Order_outer_list[floor][1] = 0
+					Order_shared_outer_list[floor][1] = 0
 					Elev_set_door_open_lamp(false)
 				}
 
@@ -550,6 +502,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[0][0] = 0
+						Order_shared_outer_list[0][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -559,6 +512,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[1][0] = 0
+						Order_shared_outer_list[1][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -568,6 +522,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					select {
 					case <-Set_timeout_chan:
 						Order_outer_list[2][0] = 0
+						Order_shared_outer_list[2][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 				}
@@ -576,53 +531,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 	}
 }
 
-/*
-func Is_new_orders() bool {
-	for floor := 0; floor < N_FLOORS; floor++ {
-		if Order_inner_list[floor] == 1 {
-
-		}
-		if Order_outer_list[floor][0] == {
-
-		}
-	}
-}
-*/
-
 /////////////GULT ER KULT////////////
-/*
-func Test_elev(test_chan chan bool) {
-	if Get_obstruction_signal() == 1 && Elev_get_floor_sensor_signal() != 0 {
-		Elev_set_motor_dir(DIRN_DOWN)
-	} else if Get_obstruction_signal() == 0 && Elev_get_floor_sensor_signal() != 3 {
-		Elev_set_motor_dir(DIRN_UP)
-	} else {
-		Elev_set_motor_dir(DIRN_STOP)
-	}
-}
-func Elev_is_elevator_vacant() bool {
-	var x = 0
-	for floor := 0; floor < N_FLOORS; floor++ {
-		if Order_inner_list[floor] == 1 {
-			x++
-		}
-	}
-	if x != 0 {
-		return false
-	}
-	return true
-}
-func Go_to_order(order_chan chan int) {
-	for {
-		if Elev_is_elevator_vacant() == false {
-			for i := 0; i < N_FLOORS; i++ {
-				if Order_inner_list[i] == 1 {
-					order_chan <- i
-				}
-			}
-		}
-	}
-}*/
 
 func Elev_is_outer_orders() int {
 	for floor := 0; floor < N_FLOORS; floor++ {
@@ -635,15 +544,6 @@ func Elev_is_outer_orders() int {
 	return 0 //Ingen ordre
 }
 
-/*func Begin_journey(floor int) {
-	if current_floor < floor {
-		Elev_set_motor_dir(DIRN_UP)
-	} else if current_floor > floor {
-		Elev_set_motor_dir(DIRN_DOWN)
-	}
-	return
-}*/
-
 func Set_current_floor() {
 	for {
 		temp := Elev_get_floor_sensor_signal()
@@ -652,12 +552,6 @@ func Set_current_floor() {
 		}
 	}
 }
-
-/*func Print() {
-	for {
-		fmt.Println(current_floor)
-	}
-}*/
 
 func Order_handling(floor int) {
 
@@ -678,28 +572,7 @@ func Order_handling(floor int) {
 
 func Print_queue() {
 	for {
-		fmt.Println(Order_outer_list)
+		fmt.Println(Order_shared_outer_list)
 		time.Sleep(1 * time.Second)
 	}
 }
-
-/*
-func Manage_door() {
-	if Elev_get_floor_sensor_signal() != -1 && IO_read_bit(MOTOR) == 0 {
-		timeout := make(chan bool)
-		set_timer := make(chan bool)
-		go Timer.Timer(timeout, set_timer)
-		Elev_set_door_open_lamp(true)
-		is_timeout := make(chan bool)
-		for {
-			select {
-			case <-timeout:
-				Elev_set_door_open_lamp(false)
-				is_timeout <- false
-			case <-is_timeout:
-				return
-			}
-		}
-	}
-}
-*/
