@@ -34,10 +34,13 @@ var received_current_floor int = 0
 var received_direction int = 0
 var received_is_idle bool = true
 
-var elev_1 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true} //THIS ELEV
-var elev_2 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
-var elev_3 = HelloMsg{Message: "0", IP: "0", Current_floor: 0, Direction: 0, Is_idle: true}
+var elev_1 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false} //THIS ELEV
+var elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+var elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
 var num_elevs_online int = 1
+var elev_1_ID int = 0
+var elev_2_ID int = 0
+var elev_3_ID int = 0
 
 func Network_main(Order_chan chan bool) {
 	// Our id can be anything. Here we pass it on the command line, using
@@ -111,22 +114,23 @@ func Network_main(Order_chan chan bool) {
 
 			if received_IP == LocalIP {
 				elev_1 = a
-			} else if (received_IP != LocalIP) && (elev_2.IP == "0") {
+			} else if (received_IP != LocalIP) && (elev_2.IP == "000") {
 				elev_2.IP = received_IP
 			} else if received_IP == elev_2.IP {
 				elev_2 = a
 			} else if (received_IP != LocalIP) && (received_IP != elev_2.IP) {
 				elev_3 = a
 			} //HUSK Å SETTE ALLE MISTEDE HEISER TIL 0 SOM DE STÅR ØVERST I FILEN OG OPPDATERE NUM_ELEVS
-			if elev_3.IP != "0" {
+			if elev_3.IP != "000" {
 				num_elevs_online = 3
-			} else if elev_2.IP != "0" {
+			} else if elev_2.IP != "000" {
 				num_elevs_online = 2
 			} else {
 				num_elevs_online = 1
 			}
 
 		}
+		//fmt.Println(num_elevs_online)
 		//fmt.Println(received_msg)
 		//fmt.Println(received_IP)
 		//fmt.Println("Current floor: ", received_current_floor)
@@ -144,76 +148,402 @@ func Cost_function() {
 	for {
 		time.Sleep(500 * time.Millisecond)
 		var elev_sufficient bool = false
-		//var elev_2_sufficient bool = false
-		//var elev_3_sufficient bool = false
-		var elev_1_difference int = 3
+		//fmt.Println(elev_1.Current_floor)
+		//fmt.Println(elev_2.Current_floor)
+		//fmt.Println(elev_3.Current_floor)
+		var elev_1_difference int = 0
 		var elev_2_difference int = 0
 		var elev_3_difference int = 0
 
 		for floor := 0; floor < Driver.N_FLOORS; floor++ {
 
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
-				//fmt.Println(":(")
+
 				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][0] = 1 //////////////////////////////////////////////////////////////////////////// <----- HER ER JÆVELEN
-				}
-
-				if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
-					elev_1_difference = floor - elev_1.Current_floor
-					fmt.Println(elev_1_difference)
-					fmt.Println(elev_2_difference)
-					fmt.Println(elev_3_difference)
-					//elev_sufficient = true
-				}
-				if elev_2.Direction == 0 && elev_2.Current_floor < floor {
-					elev_2_difference = floor - elev_2.Current_floor
-				}
-				if elev_3.Direction == 0 && elev_3.Current_floor < floor {
-					elev_3_difference = floor - elev_3.Current_floor
-
-				}
-				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
-					elev_sufficient = false
-				} /*else {
-					elev_sufficient = true
-				}*/
-				if elev_sufficient {
 					Driver.Order_outer_list[floor][0] = 1
-					elev_sufficient = false
-				} else {
-					fmt.Println("FALSE IKKE KJØR")
+				} else if num_elevs_online == 2 { //////////////////////////////////////////////// OPP 2 Heiser
+
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_2_difference = floor - elev_2.Current_floor
+					elev_3_difference = 5
+					
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+
+						elev_sufficient = true
+					}
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+						if elev_1_difference > elev_2_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_2_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
+								fmt.Println(elev_2_ID)
+							}
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+					}
 				}
 			}
-			if /*Driver.Order_shared_outer_list[floor][0] == 1 ||*/ Driver.Order_shared_outer_list[floor][1] == 1 {
+			if elev_sufficient == true {
+				Driver.Order_outer_list[floor][0] = 1
+				elev_sufficient = false
+			}
+
+			if Driver.Order_shared_outer_list[floor][1] == 1 {
 
 				if num_elevs_online == 1 {
 					Driver.Order_outer_list[floor][1] = 1
-				}
-				if elev_1.Direction == 0 && elev_1.Current_floor < floor {
+				} else if num_elevs_online == 2 {
+
 					elev_1_difference = floor - elev_1.Current_floor
-					elev_sufficient = true
-				}
-				/*if elev_2.Dir == 0 && elev_1.Current_floor < floor {
 					elev_2_difference = floor - elev_2.Current_floor
-					elev_2_sufficient = true
-				}
-				if elev_3.Dir == 0 && elev_1.Current_floor < floor {
-					elev_3_difference = floor - elev_3.Current_floor
-					elev_3_sufficient = true
-				}*/
-				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
-					elev_sufficient = false
-				} else {
-					elev_sufficient = true
-				}
-				if elev_sufficient {
-					Driver.Order_outer_list[floor][1] = 1
-					elev_sufficient = false
+					elev_3_difference = 5
+
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+
+						elev_sufficient = true
+					}
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+						if elev_1_difference > elev_2_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_2_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
+								fmt.Println(elev_2_ID)
+							}
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+					}
 				}
 			}
+			if elev_sufficient == true {
+				Driver.Order_outer_list[floor][1] = 1
+				elev_sufficient = false
+			} /////////////////////////////////////////////////////////////////////////////////////////////////SLUTT OPP 2 HEISER
+			else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
 
-		}
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_2_difference = floor - elev_2.Current_floor
+					elev_3_difference = floor - elev_3.Current_floor
+
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+
+						elev_sufficient = true
+					}
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+						if elev_1_difference > elev_2_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_2_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
+								fmt.Println(elev_2_ID)
+							}
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+					}
+					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor < floor {
+						if elev_1_difference > elev_3_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_3_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
+								fmt.Println(elev_3_ID)
+							}
+							if elev_1_ID < elev_3_ID {
+								elev_sufficient = false
+							}
+						}
+					}
+				}
+			}
+			if elev_sufficient == true {
+				Driver.Order_outer_list[floor][0] = 1
+				elev_sufficient = false
+			}
+
+			if Driver.Order_shared_outer_list[floor][1] == 1 {
+
+				if num_elevs_online == 3 {
+
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_2_difference = floor - elev_2.Current_floor
+					elev_3_difference = floor - elev_3.Current_floor
+
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+
+						elev_sufficient = true
+					}
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+						if elev_1_difference > elev_2_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_2_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
+								fmt.Println(elev_2_ID)
+							}
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+					}
+					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor < floor {
+						if elev_1_difference > elev_3_difference {
+							elev_sufficient = false
+						} else if elev_1_difference == elev_3_difference {
+							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+								fmt.Println(elev_1_ID)
+							}
+							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
+								fmt.Println(elev_3_ID)
+							}
+							if elev_1_ID < elev_3_ID {
+								elev_sufficient = false
+							}
+						}
+					}
+				}
+			}
+			if elev_sufficient == true {
+				Driver.Order_outer_list[floor][1] = 1
+				elev_sufficient = false
+			} /////////////////////////////////////////////////////////////////////////////////////////////////SLUTT OPP 3 HEISER
+		} 
 	}
+
+	// 				if num_elevs_online == 3 {
+	// 					if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 						elev_1_difference = floor - elev_1.Current_floor
+
+	// 						elev_sufficient = true
+	// 					}
+	// 					if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 						elev_2_difference = floor - elev_2.Current_floor
+	// 					}
+	// 					if /*elev_3.Direction == 0 &&*/ elev_3.Current_floor < floor {
+	// 						elev_3_difference = floor - elev_3.Current_floor
+
+	// 					}
+	// 				}
+	// 			}
+
+	// 			///////TROLOLOL
+	// 			if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+	// 				elev_sufficient = false
+	// 			}
+	// 			if Driver.Order_shared_outer_list[floor][1] == 1 {
+	// 				//fmt.Println(":(")
+	// 				if num_elevs_online == 1 {
+	// 					Driver.Order_outer_list[floor][1] = 1 //////////////////////////////////////////////////////////////////////////// <----- HER ER JÆVELEN
+	// 				}
+	// 				if num_elevs_online == 2 {
+	// 					if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 						elev_1_difference = floor - elev_1.Current_floor
+
+	// 						elev_sufficient = true
+	// 					}
+	// 					if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 						elev_2_difference = floor - elev_2.Current_floor
+	// 						elev_3_difference = 5
+	// 					}
+	// 				}
+	// 				if num_elevs_online == 3 {
+	// 					if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 						elev_1_difference = floor - elev_1.Current_floor
+
+	// 						elev_sufficient = true
+	// 					}
+	// 					if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 						elev_2_difference = floor - elev_2.Current_floor
+	// 					}
+	// 					if /*elev_3.Direction == 0 &&*/ elev_3.Current_floor < floor {
+	// 						elev_3_difference = floor - elev_3.Current_floor
+
+	// 					}
+	// 				}
+	// 				if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+	// 					elev_sufficient = false
+	// 				}
+
+	// 				/*if (elev_1_difference == elev_2_difference && elev_1.Direction == 0 && elev_2.Direction == 0) || (elev_1_difference == elev_3_difference && elev_1.Direction == 0 && elev_3.Direction == 0) {
+	// 					var elev_1_string_ID byte = 0
+	// 					var elev_2_string_ID byte = 0
+	// 					var elev_3_string_ID byte = 0
+
+	// 					for i := 12; i < 15; i++ {
+	// 						elev_1_string_ID += elev_1.IP[i]
+	// 						if elev_2_ID != 0 {
+	// 							(elev_2_string_ID) += elev_2.IP[i]
+	// 						}
+	// 						if elev_3_ID != 0 {
+	// 							(elev_3_string_ID) += elev_3.IP[i]
+	// 						}
+	// 					}
+	// 					elev_1_ID = int(elev_1_string_ID)
+	// 					elev_2_ID = int(elev_2_string_ID)
+	// 					elev_3_ID = int(elev_3_string_ID)
+	// 					/*if elev_sufficient == true{
+	// 					if elev_1_ID < elev_2_ID || elev_1_ID < elev_3_ID {
+	// 						elev_sufficient == false
+	// 					}
+	// 				}*/
+	// 				if elev_sufficient == true {
+	// 					Driver.Order_outer_list[floor][1] = 1
+	// 					elev_sufficient = false
+	// 				} else {
+	// 					fmt.Println("FALSE IKKE KJØR")
+	// 				}
+	// 			}
+	// 			////if /*Driver.Order_shared_outer_list[floor][0] == 1 ||*/ Driver.Order_shared_outer_list[floor][1] == 1 {
+
+	// 			/*if num_elevs_online == 1 {
+	// 				Driver.Order_outer_list[floor][1] = 1
+	// 			}
+	// 			if elev_1.Direction == 0 && elev_1.Current_floor < floor {
+	// 				elev_1_difference = floor - elev_1.Current_floor
+	// 				elev_sufficient = true
+	// 			}
+	// 			/*if elev_2.Dir == 0 && elev_1.Current_floor < floor {
+	// 				elev_2_difference = floor - elev_2.Current_floor
+	// 				elev_2_sufficient = true
+	// 			}
+	// 			if elev_3.Dir == 0 && elev_1.Current_floor < floor {
+	// 				elev_3_difference = floor - elev_3.Current_floor
+	// 				elev_3_sufficient = true
+	// 			}*/
+	// 			/*if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+	// 					elev_sufficient = false
+	// 				} else {
+	// 					elev_sufficient = true
+	// 				}
+	// 				if elev_sufficient {
+	// 					Driver.Order_outer_list[floor][1] = 1
+	// 					elev_sufficient = false
+	// 				}
+	// 			}*/
+	// 			////////////////////////slutt på oppovertelling
+	// 			// for floor := Driver.N_FLOORS - 1; floor >= 0; floor-- {
+	// 			// 	if Driver.Order_shared_outer_list[floor][0] == 1 {
+	// 			// 		//fmt.Println(":(")
+	// 			// 		if num_elevs_online == 1 {
+	// 			// 			Driver.Order_outer_list[floor][0] = 1 //////////////////////////////////////////////////////////////////////////// <----- HER ER JÆVELEN
+	// 			// 		}
+	// 			// 		if num_elevs_online == 2 {
+	// 			// 			if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 			// 				elev_1_difference = floor - elev_1.Current_floor
+
+	// 			// 				elev_sufficient = true
+	// 			// 			}
+	// 			// 			if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 			// 				elev_2_difference = floor - elev_2.Current_floor
+	// 			// 				elev_3_difference = 5
+	// 			// 			}
+	// 			// 		}
+	// 			// 		if num_elevs_online == 3 {
+	// 			// 			if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 			// 				elev_1_difference = floor - elev_1.Current_floor
+
+	// 			// 				elev_sufficient = true
+	// 			// 			}
+	// 			// 			if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 			// 				elev_2_difference = floor - elev_2.Current_floor
+	// 			// 			}
+	// 			// 			if /*elev_3.Direction == 0 &&*/ elev_3.Current_floor < floor {
+	// 			// 				elev_3_difference = floor - elev_3.Current_floor
+
+	// 			// 			}
+	// 			// 		}
+	// 			// 	}
+
+	// 			// 	///////TROLOLOL
+	// 			// 	if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+	// 			// 		elev_sufficient = false
+	// 			// 	}
+	// 			// 	if Driver.Order_shared_outer_list[floor][1] == 1 {
+	// 			// 		//fmt.Println(":(")
+	// 			// 		if num_elevs_online == 1 {
+	// 			// 			Driver.Order_outer_list[floor][1] = 1 //////////////////////////////////////////////////////////////////////////// <----- HER ER JÆVELEN
+	// 			// 		}
+	// 			// 		if num_elevs_online == 2 {
+	// 			// 			if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 			// 				elev_1_difference = floor - elev_1.Current_floor
+
+	// 			// 				elev_sufficient = true
+	// 			// 			}
+	// 			// 			if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 			// 				elev_2_difference = floor - elev_2.Current_floor
+	// 			// 				elev_3_difference = 5
+	// 			// 			}
+	// 			// 		}
+	// 			// 		if num_elevs_online == 3 {
+	// 			// 			if /*elev_1.Direction == 0 &&*/ elev_1.Current_floor < floor {
+	// 			// 				elev_1_difference = floor - elev_1.Current_floor
+
+	// 			// 				elev_sufficient = true
+	// 			// 			}
+	// 			// 			if /*elev_2.Direction == 0 &&*/ elev_2.Current_floor < floor {
+	// 			// 				elev_2_difference = floor - elev_2.Current_floor
+	// 			// 			}
+	// 			// 			if /*elev_3.Direction == 0 &&*/ elev_3.Current_floor < floor {
+	// 			// 				elev_3_difference = floor - elev_3.Current_floor
+
+	// 			// 			}
+	// 			// 		}
+	// 			// 		fmt.Println(elev_1_difference)
+	// 			// 		fmt.Println(elev_2_difference)
+	// 			// 		fmt.Println(elev_3_difference)
+	// 			// 		if (elev_1_difference > elev_2_difference) || (elev_1_difference > elev_3_difference) {
+	// 			// 			elev_sufficient = false
+	// 			// 		}
+
+	// 			// 		/*if (elev_1_difference == elev_2_difference && elev_1.Direction == 0 && elev_2.Direction == 0) || (elev_1_difference == elev_3_difference && elev_1.Direction == 0 && elev_3.Direction == 0) {
+	// 			// 			var elev_1_string_ID byte = 0
+	// 			// 			var elev_2_string_ID byte = 0
+	// 			// 			var elev_3_string_ID byte = 0
+
+	// 			// 			for i := 12; i < 15; i++ {
+	// 			// 				elev_1_string_ID += elev_1.IP[i]
+	// 			// 				if elev_2_ID != 0 {
+	// 			// 					(elev_2_string_ID) += elev_2.IP[i]
+	// 			// 				}
+	// 			// 				if elev_3_ID != 0 {
+	// 			// 					(elev_3_string_ID) += elev_3.IP[i]
+	// 			// 				}
+	// 			// 			}
+	// 			// 			elev_1_ID = int(elev_1_string_ID)
+	// 			// 			elev_2_ID = int(elev_2_string_ID)
+	// 			// 			elev_3_ID = int(elev_3_string_ID)
+	// 			// 			/*if elev_sufficient == true{
+	// 			// 			if elev_1_ID < elev_2_ID || elev_1_ID < elev_3_ID {
+	// 			// 				elev_sufficient == false
+	// 			// 			}
+	// 			// 		}*/
+	// 			// 		if elev_sufficient == true {
+	// 			// 			Driver.Order_outer_list[floor][1] = 1
+	// 			// 			elev_sufficient = false
+	// 			// 		} else {
+	// 			// 			fmt.Println("FALSE IKKE KJØR")
+	// 			// 		}
+	// 			//				}
+
+	// 			//	}
+	// 		}
+	// 	}
 
 }
 

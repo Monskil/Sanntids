@@ -540,6 +540,6 @@ func Print_queue() {
 	for {
 		fmt.Println("Shared:     ", Order_shared_outer_list)
 		fmt.Println("Egen outer :", Order_outer_list)
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
