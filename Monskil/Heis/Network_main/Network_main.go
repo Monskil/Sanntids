@@ -43,14 +43,11 @@ var elev_2_ID int = 0
 var elev_3_ID int = 0
 
 func Network_main(Order_chan chan bool) {
-	// Our id can be anything. Here we pass it on the command line, using
-	//  `go run main.go -id=our_id`
+
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
-	// ... or alternatively, we can use the local IP address.
-	// (But since we can run multiple programs on the same PC, we also append the
-	//  process ID)
+
 	if id == "" {
 		localIP, err := localip.LocalIP()
 		if err != nil {
@@ -60,57 +57,36 @@ func Network_main(Order_chan chan bool) {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	// We make a channel for receiving updates on the id's of the peers that are
-	//  alive on the network
 	peerUpdateCh := make(chan peers.PeerUpdate)
-	// We can disable/enable the transmitter after it has been started.
-	// This could be used to signal that we are somehow "unavailable".
 	peerTxEnable := make(chan bool)
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
-
-	// We make channels for sending and receiving our custom data types
 	helloTx := make(chan HelloMsg)
 	helloRx := make(chan HelloMsg)
-
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
 	go bcast.Transmitter(16569, helloTx)
 	go bcast.Receiver(16569, helloRx)
 
 	LocalIP, _ := localip.LocalIP()
-	// The example message. We just send one of these every second.
 	go func() {
-
 		for {
 			current_floor1 := Driver.Current_floor
 			Dir := Driver.IO_read_bit(Driver.MOTORDIR)
 			idle := Driver.Elev_is_idle(Order_chan)
 			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
-			/*Message.Message := Orders_to_string()
-			Message.IP := 3 //my_ip //////////*/
 			helloTx <- Message
-			//fmt.Println("Current floor: ", current_floor)
-			//fmt.Println("Direction: ", Dir)
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
 
 	for {
 		select {
-		// case p := <-peerUpdateCh:
-		/*fmt.Printf("Peer update:\n")
-		fmt.Printf("  Peers:    %q\n", p.Peers)
-		fmt.Printf("  New:      %q\n", p.New)
-		fmt.Printf("  Lost:     %q\n", p.Lost)
-		*/
 		case a := <-helloRx:
-			received_msg = String_to_orders(a.Message) ////////////
+			received_msg = String_to_orders(a.Message)
 			received_IP = a.IP
 			received_current_floor = a.Current_floor
 			received_direction = a.Direction
 			received_is_idle = a.Is_idle
+			Set_ID_from_IP()
 
 			if received_IP == LocalIP {
 				elev_1 = a
@@ -144,13 +120,22 @@ func Network_main(Order_chan chan bool) {
 	}
 }
 
+func Set_ID_from_IP() {
+	if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
+		fmt.Println(elev_1_ID)
+	}
+	if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
+		fmt.Println(elev_2_ID)
+	}
+	if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
+		fmt.Println(elev_2_ID)
+	}
+}
+
 func Cost_function() {
 	for {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		var elev_sufficient bool = false
-		//fmt.Println(elev_1.Current_floor)
-		//fmt.Println(elev_2.Current_floor)
-		//fmt.Println(elev_3.Current_floor)
 		var elev_1_difference int = 0
 		var elev_2_difference int = 0
 		var elev_3_difference int = 0
@@ -175,12 +160,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -211,12 +190,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -242,12 +215,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -257,12 +224,6 @@ func Cost_function() {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
-								fmt.Println(elev_3_ID)
-							}
 							if elev_1_ID < elev_3_ID {
 								elev_sufficient = false
 							}
@@ -291,12 +252,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -306,12 +261,6 @@ func Cost_function() {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
-								fmt.Println(elev_3_ID)
-							}
 							if elev_1_ID < elev_3_ID {
 								elev_sufficient = false
 							}
@@ -327,10 +276,7 @@ func Cost_function() {
 		for floor := Driver.N_FLOORS-1; floor >= 0; floor-- {
 
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
-
-				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][0] = 1
-				} else if num_elevs_online == 2 { 
+				if num_elevs_online == 2 { 
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
@@ -344,12 +290,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -364,9 +304,7 @@ func Cost_function() {
 
 			if Driver.Order_shared_outer_list[floor][1] == 1 {
 
-				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][1] = 1
-				} else if num_elevs_online == 2 {
+				if num_elevs_online == 2 {
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
@@ -379,12 +317,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -400,9 +332,7 @@ func Cost_function() {
 			/////////////////////////////////////////////////////////////////////////////////////////////////////START NED 3 HEISER
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
 
-				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][0] = 1
-				} else if num_elevs_online == 2 { 
+				if num_elevs_online == 3 { 
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
@@ -416,12 +346,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -431,12 +355,6 @@ func Cost_function() {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
-								fmt.Println(elev_3_ID)
-							}
 							if elev_1_ID < elev_3_ID {
 								elev_sufficient = false
 							}
@@ -451,9 +369,7 @@ func Cost_function() {
 
 			if Driver.Order_shared_outer_list[floor][1] == 1 {
 
-				if num_elevs_online == 1 {
-					Driver.Order_outer_list[floor][1] = 1
-				} else if num_elevs_online == 2 {
+				if num_elevs_online == 3 {
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
@@ -466,12 +382,6 @@ func Cost_function() {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-								fmt.Println(elev_2_ID)
-							}
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -481,12 +391,6 @@ func Cost_function() {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
-							if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-								fmt.Println(elev_1_ID)
-							}
-							if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
-								fmt.Println(elev_3_ID)
-							}
 							if elev_1_ID < elev_3_ID {
 								elev_sufficient = false
 							}
