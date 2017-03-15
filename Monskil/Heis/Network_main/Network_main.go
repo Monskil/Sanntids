@@ -134,7 +134,7 @@ func Set_ID_from_IP() {
 
 func Cost_function() {
 	for {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 		var elev_sufficient bool = false
 		var elev_1_difference int = 0
 		var elev_2_difference int = 0
@@ -151,12 +151,12 @@ func Cost_function() {
 					elev_1_difference = floor - elev_1.Current_floor
 					elev_2_difference = floor - elev_2.Current_floor
 					elev_3_difference = 5
-					
-					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
 
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -182,11 +182,11 @@ func Cost_function() {
 					elev_2_difference = floor - elev_2.Current_floor
 					elev_3_difference = 5
 
-					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
 
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -200,37 +200,36 @@ func Cost_function() {
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
 				elev_sufficient = false
-			} /////////////////////////////////////////////////////////////////////////////////////////////////SLUTT OPP 2 HEISER
-			else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
+			} else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
 
-					elev_1_difference = floor - elev_1.Current_floor
-					elev_2_difference = floor - elev_2.Current_floor
-					elev_3_difference = floor - elev_3.Current_floor
+				elev_1_difference = floor - elev_1.Current_floor
+				elev_2_difference = floor - elev_2.Current_floor
+				elev_3_difference = floor - elev_3.Current_floor
 
-					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+				if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
 
-						elev_sufficient = true
-					}
-					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
-						if elev_1_difference > elev_2_difference {
+					elev_sufficient = true
+				}
+				if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
+					if elev_1_difference > elev_2_difference {
+						elev_sufficient = false
+					} else if elev_1_difference == elev_2_difference {
+						if elev_1_ID < elev_2_ID {
 							elev_sufficient = false
-						} else if elev_1_difference == elev_2_difference {
-							if elev_1_ID < elev_2_ID {
-								elev_sufficient = false
-							}
 						}
 					}
-					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor < floor {
-						if elev_1_difference > elev_3_difference {
+				}
+				if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor <= floor {
+					if elev_1_difference > elev_3_difference {
+						elev_sufficient = false
+					} else if elev_1_difference == elev_3_difference {
+						if elev_1_ID < elev_3_ID {
 							elev_sufficient = false
-						} else if elev_1_difference == elev_3_difference {
-							if elev_1_ID < elev_3_ID {
-								elev_sufficient = false
-							}
 						}
 					}
 				}
 			}
+
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
 				elev_sufficient = false
@@ -244,11 +243,11 @@ func Cost_function() {
 					elev_2_difference = floor - elev_2.Current_floor
 					elev_3_difference = floor - elev_3.Current_floor
 
-					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor < floor {
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
 
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor < floor {
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -257,7 +256,7 @@ func Cost_function() {
 							}
 						}
 					}
-					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor < floor {
+					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor <= floor {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
@@ -273,20 +272,20 @@ func Cost_function() {
 				elev_sufficient = false
 			} /////////////////////////////////////////////////////////////////////////////////////////////////SLUTT OPP 3 HEISER
 		} /////////////////////////////////////////////////////////////////////////////////////////////////////START NED 2 HEISER
-		for floor := Driver.N_FLOORS-1; floor >= 0; floor-- {
+		for floor := Driver.N_FLOORS - 1; floor >= 0; floor-- {
 
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
-				if num_elevs_online == 2 { 
+				if num_elevs_online == 2 {
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
 					elev_3_difference = 5
-					
-					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor > floor {
+
+					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor >= floor {
 
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor > floor {
+					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor >= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -310,10 +309,10 @@ func Cost_function() {
 					elev_2_difference = elev_2.Current_floor - floor
 					elev_3_difference = 5
 
-					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor > floor {
+					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor >= floor {
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor > floor {
+					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor >= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -332,17 +331,17 @@ func Cost_function() {
 			/////////////////////////////////////////////////////////////////////////////////////////////////////START NED 3 HEISER
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
 
-				if num_elevs_online == 3 { 
+				if num_elevs_online == 3 {
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
 					elev_3_difference = elev_3.Current_floor - floor
-					
-					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor > floor {
+
+					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor >= floor {
 
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor > floor {
+					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor >= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -351,7 +350,7 @@ func Cost_function() {
 							}
 						}
 					}
-					if (elev_3.Direction == 1 || elev_3.Is_idle == true) && elev_3.Current_floor > floor {
+					if (elev_3.Direction == 1 || elev_3.Is_idle == true) && elev_3.Current_floor >= floor {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
@@ -375,10 +374,10 @@ func Cost_function() {
 					elev_2_difference = elev_2.Current_floor - floor
 					elev_3_difference = elev_3.Current_floor - floor
 
-					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor > floor {
+					if (elev_1.Direction == 1 || elev_1.Is_idle == true) && elev_1.Current_floor >= floor {
 						elev_sufficient = true
 					}
-					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor > floor {
+					if (elev_2.Direction == 1 || elev_2.Is_idle == true) && elev_2.Current_floor >= floor {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
@@ -387,7 +386,7 @@ func Cost_function() {
 							}
 						}
 					}
-					if (elev_3.Direction == 1 || elev_3.Is_idle == true) && elev_3.Current_floor > floor {
+					if (elev_3.Direction == 1 || elev_3.Is_idle == true) && elev_3.Current_floor >= floor {
 						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
