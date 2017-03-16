@@ -41,6 +41,8 @@ func Function_state_machine() {
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			dir := Driver.Next_order()
 			Driver.Elev_set_motor_dir(dir)
+			dir = Driver.Next_order()
+			Driver.Elev_set_motor_dir(dir)
 			Set_timer_chan <- true
 			Driver.Elev_set_door_open_lamp(true)
 		case <-Order_chan:
@@ -49,6 +51,7 @@ func Function_state_machine() {
 		case <-Set_timeout_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			Driver.Elev_set_door_open_lamp(false)
+			//Order_chan <- true
 		}
 	}
 }

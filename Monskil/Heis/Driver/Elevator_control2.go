@@ -271,9 +271,6 @@ func Register_button(Order_chan chan bool) {
 			}
 
 		}
-		if Get_stop_signal() != 0 {
-			Elev_set_stop_lamp(true)
-		}
 	}
 }
 
@@ -385,6 +382,7 @@ func Next_order() Elev_motor_direction_t {
 				Direction = -1 /*HER*/
 			}
 			IO_set_bit(MOTORDIR)
+			return DIRN_DOWN ////////////////////////////////////////////////////////monica har tulla her
 		}
 		if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][0] == 1) || (Order_outer_list[floor][1] == 1)) && (floor > Current_floor) && (Direction != -1) && (More_orders_up == true) {
 
@@ -413,8 +411,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
-					Order_outer_list[floor][0] = 0
 					Order_shared_outer_list[floor][0] = 0
+					Order_outer_list[floor][0] = 0
 					Elev_set_door_open_lamp(false)
 				}
 			}
@@ -423,16 +421,16 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[3][1] = 0
 						Order_shared_outer_list[3][1] = 0
+						Order_outer_list[3][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 				} else if floor == 2 && Order_outer_list[3][1] == 0 {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[2][1] = 0
 						Order_shared_outer_list[2][1] = 0
+						Order_outer_list[2][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -440,8 +438,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[1][1] = 0
 						Order_shared_outer_list[1][1] = 0
+						Order_outer_list[1][1] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -461,8 +459,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
-					Order_outer_list[floor][1] = 0
 					Order_shared_outer_list[floor][1] = 0
+					Order_outer_list[floor][1] = 0
 					Elev_set_door_open_lamp(false)
 				}
 			}
@@ -471,8 +469,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[0][0] = 0
 						Order_shared_outer_list[0][0] = 0
+						Order_outer_list[0][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -480,8 +478,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[1][0] = 0
 						Order_shared_outer_list[1][0] = 0
+						Order_outer_list[1][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 
@@ -489,12 +487,21 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Arrived_chan <- true
 					select {
 					case <-Set_timeout_chan:
-						Order_outer_list[2][0] = 0
 						Order_shared_outer_list[2][0] = 0
+						Order_outer_list[2][0] = 0
 						Elev_set_door_open_lamp(false)
 					}
 				}
-			}
+			} /*else if floor == 2 && Order_outer_list[2][1] == 1 && Elev_get_floor_sensor_signal() == 3 { /////////////////////////////////////////denne elsen
+				Arrived_chan <- true
+				select {
+				case <-Set_timeout_chan:
+					Order_shared_outer_list[3][1] = 0
+					Order_outer_list[3][1] = 0
+					Elev_set_door_open_lamp(false)
+				}
+			}*/
+
 		}
 	}
 }
@@ -540,6 +547,6 @@ func Print_queue() {
 	for {
 		fmt.Println("Shared:     ", Order_shared_outer_list)
 		fmt.Println("Egen outer :", Order_outer_list)
-		time.Sleep(2 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
