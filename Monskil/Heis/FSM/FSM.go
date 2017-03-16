@@ -1,6 +1,7 @@
 package FSM
 
 import (
+	"../Backup_conductor"
 	"../Driver"
 	"../Network_main"
 	"../Timer"
@@ -16,8 +17,10 @@ func Function_state_machine() {
 	Order_chan := make(chan bool, 100000000)
 	Set_timeout_chan := make(chan bool, 100000000)
 	Set_timer_chan := make(chan bool, 100000000)
+	Full_array_chan := make(chan bool)
 
-	go Network_main.Network_main(Order_chan)
+	go Backup_conductor.Backup_conductor()
+	go Network_main.Network_main(Order_chan, Full_array_chan)
 	go Network_main.Order_compare_outer_list()
 	go Network_main.Cost_function()
 	go Driver.Lights_tracking()
@@ -28,8 +31,9 @@ func Function_state_machine() {
 	go Driver.Register_button(Order_chan)
 	go Driver.Elev_is_idle(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
+	go Network_main.Check_array(Full_array_chan)
 
-	go Driver.Print_queue()
+	//go Driver.Print_queue()
 	for {
 		select {
 

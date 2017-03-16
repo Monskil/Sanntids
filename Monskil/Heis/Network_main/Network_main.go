@@ -41,9 +41,10 @@ var num_elevs_online int = 1
 var elev_1_ID int = 0
 var elev_2_ID int = 0
 var elev_3_ID int = 0
+var num_unique_IPs int = 1
+var IP_list = [20]string{"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"}
 
-func Network_main(Order_chan chan bool) {
-
+func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -74,7 +75,7 @@ func Network_main(Order_chan chan bool) {
 			idle := Driver.Elev_is_idle(Order_chan)
 			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
 			helloTx <- Message
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)
 		}
 	}()
 
@@ -96,7 +97,7 @@ func Network_main(Order_chan chan bool) {
 				elev_2 = a
 			} else if (received_IP != LocalIP) && (received_IP != elev_2.IP) {
 				elev_3 = a
-			} //HUSK Å SETTE ALLE MISTEDE HEISER TIL 0 SOM DE STÅR ØVERST I FILEN OG OPPDATERE NUM_ELEVS
+			}
 			if elev_3.IP != "000" {
 				num_elevs_online = 3
 			} else if elev_2.IP != "000" {
@@ -104,8 +105,16 @@ func Network_main(Order_chan chan bool) {
 			} else {
 				num_elevs_online = 1
 			}
-
+			for i := 0; i < 20; i++ {
+				if IP_list[i] != "0" {
+					IP_list[i] = received_IP
+					break
+				} else {
+					full_array_chan <- true
+				}
+			}
 		}
+
 		//fmt.Println(num_elevs_online)
 		//fmt.Println(received_msg)
 		//fmt.Println(received_IP)
@@ -113,9 +122,43 @@ func Network_main(Order_chan chan bool) {
 		//fmt.Println("Direction: ", received_direction)
 		//fmt.Println("No orders: ", received_is_idle)*/
 		fmt.Println("\n")
+		fmt.Println("Number of elevators online: %s", num_elevs_online)
 		//fmt.Println(elev_1)
 		//fmt.Println(elev_2)
 		//fmt.Println(elev_3)
+
+	}
+
+}
+
+func Check_array(full_array_chan chan bool) {
+	select {
+	case <-full_array_chan:
+		elev_2_online := false
+		elev_3_online := false
+
+		for i := 0; i < 20; i++ {
+			if IP_list[i] == elev_2.IP {
+				elev_2_online = true
+			} else if IP_list[i] == elev_3.IP {
+				elev_3_online = true
+			}
+		}
+		if elev_3_online == false {
+			num_elevs_online--
+			elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+			elev_3_ID = 0
+		}
+		if elev_2_online == false {
+			num_elevs_online--
+			elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+			elev_2_ID = 0
+		}
+		for i := 0; i < 20; i++ {
+			IP_list[i] = "0"
+		}
+		fmt.Println("\n")
+		fmt.Println("Number of elevators online: ", num_elevs_online)
 
 	}
 }
