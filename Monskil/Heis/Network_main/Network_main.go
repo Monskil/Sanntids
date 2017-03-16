@@ -22,6 +22,7 @@ type HelloMsg struct {
 	Current_floor int
 	Direction     int
 	Is_idle       bool
+	Is_dead       bool
 }
 
 var received_msg = [4] /*N_FLOORS*/ [3] /*N_BUTTONS*/ int{
@@ -34,21 +35,25 @@ var received_IP = "0"
 var received_current_floor int = 0
 var received_direction int = 0
 var received_is_idle bool = true
+var received_is_dead bool = false
 
-var elev_1 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false} //THIS ELEV
-var elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
-var elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+var elev_1 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: false} //THIS ELEV
+var elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: false}
+var elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: false}
 var num_elevs_online int = 1
 var elev_1_ID int = 0
 var elev_2_ID int = 0
 var elev_3_ID int = 0
 var elev_new_ID int = 0
 var num_unique_IPs int = 1
+var Dead_1 bool = false
+var Dead_2 bool = false
+var Dead_3 bool = false
 
 //var IP_list = [20]string{"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"}
 var elev_lost string = ""
 
-func Network_main(Order_chan chan bool, full_array_chan chan bool) {
+func Network_main(Order_chan chan bool /*full_array_chan chan bool*/, timeout_2 chan bool) {
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -77,7 +82,7 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 			current_floor1 := Driver.Current_floor
 			Dir := Driver.IO_read_bit(Driver.MOTORDIR)
 			idle := Driver.Elev_is_idle(Order_chan)
-			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
+			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle, Is_dead: Dead_1}
 			helloTx <- Message
 			time.Sleep(5 * time.Millisecond)
 		}
@@ -138,18 +143,30 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 					if elev_new_ID == elev_2_ID {
 						elev_2_ID = 0
 						elev_new_ID = 0
-						elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+						elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: false}
 					} else if elev_new_ID == elev_3_ID {
 						elev_3_ID = 0
 						elev_new_ID = 0
-						elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+						elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: false}
 					}
 				}
 
 			}
-			////////////////////////////////////////////////
+			///////////////////////////////////////////////////////////////////////////////////////////////77////////////////////////////////////////////////
+		case <-timeout_2:
+			//fmt.Println("tomeout registered")
+			num_elevs_online = num_elevs_online - 1
+			if Dead_2 == true {
+				elev_2_ID = 0
+				Dead_2 = true
+				elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: true}
+			} else if Dead_3 == true {
+				elev_3_ID = 0
+				Dead_3 = true
+				elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: true}
+			}
 		}
-
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//fmt.Println(num_elevs_online)
 		//fmt.Println(received_msg)
 		//fmt.Println(received_IP)
@@ -161,6 +178,9 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 		//fmt.Println(elev_1_ID)
 		//fmt.Println(elev_2_ID)
 		//fmt.Println(elev_3_ID)
+		//fmt.Println("Dead 1: ", Dead_1)
+		//fmt.Println("Dead 2: ", Dead_2)
+		//fmt.Println("Dead 3: ", Dead_3)
 
 	}
 
@@ -178,7 +198,7 @@ func Set_ID_from_IP() {
 	}
 }
 
-func Cost_function() {
+func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 	for {
 		time.Sleep(10 * time.Millisecond)
 		var elev_sufficient bool = false
@@ -192,6 +212,8 @@ func Cost_function() {
 
 				if num_elevs_online == 1 {
 					Driver.Order_outer_list[floor][0] = 1
+					Set_timer_2_floor <- floor
+					Set_timer_2_b <- 0
 				} else if num_elevs_online == 2 { //////////////////////////////////////////////// OPP 2 Heiser
 
 					elev_1_difference = floor - elev_1.Current_floor
@@ -215,6 +237,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 0
 				//fmt.Println(elev_sufficient)
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
@@ -225,6 +249,8 @@ func Cost_function() {
 
 				if num_elevs_online == 1 {
 					Driver.Order_outer_list[floor][1] = 1
+					Set_timer_2_floor <- floor
+					Set_timer_2_b <- 1
 				} else if num_elevs_online == 2 {
 
 					elev_1_difference = floor - elev_1.Current_floor
@@ -249,6 +275,8 @@ func Cost_function() {
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
 				elev_sufficient = false
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 1
 			} else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
 
 				elev_1_difference = floor - elev_1.Current_floor
@@ -282,6 +310,8 @@ func Cost_function() {
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
 				elev_sufficient = false
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 0
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
 			}*/
@@ -320,6 +350,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0
@@ -352,6 +384,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 0
 				elev_sufficient = false
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
@@ -381,6 +415,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0
@@ -421,6 +457,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 0
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
@@ -459,6 +497,8 @@ func Cost_function() {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
+				Set_timer_2_floor <- floor
+				Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0
@@ -548,6 +588,7 @@ func Order_compare_outer_list() {
 				Driver.Order_shared_outer_list[floor][0] = received_msg[floor][0]
 				// Driver.Elev_set_button_lamp(Driver.BUTTON_CALL_UP, floor, 0)
 				counter++
+				//fmt.Println("setter timer_2")
 
 			}
 			if Driver.Order_shared_outer_list[floor][1] != received_msg[floor][1] && (received_IP != localIP) /*&& Driver.Order_outer_list[floor][1] != 1*/ {

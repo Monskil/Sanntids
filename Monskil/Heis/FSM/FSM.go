@@ -17,12 +17,15 @@ func Function_state_machine() {
 	Order_chan := make(chan bool, 100000000)
 	Set_timeout_chan := make(chan bool, 100000000)
 	Set_timer_chan := make(chan bool, 100000000)
-	Full_array_chan := make(chan bool)
+	Timeout_2 := make(chan bool, 100000000)
+	Set_timer_2_floor := make(chan int, 100000000)
+	Set_timer_2_b := make(chan int, 100000000)
+	//Full_array_chan := make(chan bool)
 
 	go Backup_conductor.Backup_conductor()
-	go Network_main.Network_main(Order_chan, Full_array_chan)
+	go Network_main.Network_main(Order_chan /*, Full_array_chan*/, Timeout_2)
 	go Network_main.Order_compare_outer_list()
-	go Network_main.Cost_function()
+	go Network_main.Cost_function(Set_timer_2_floor, Set_timer_2_b)
 	go Driver.Lights_tracking()
 	go Driver.Is_arrived(Arrived_chan, Set_timeout_chan)
 	go Driver.Order_set_inner_order()
@@ -31,9 +34,10 @@ func Function_state_machine() {
 	go Driver.Register_button(Order_chan)
 	go Driver.Elev_is_idle(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
+	go Timer.Timer_2(Timeout_2, Set_timer_2_floor, Set_timer_2_b)
 	//go Network_main.Check_array(Full_array_chan)
 
-	go Driver.Print_queue()
+	//go Driver.Print_queue()
 	for {
 		select {
 
@@ -51,7 +55,6 @@ func Function_state_machine() {
 		case <-Set_timeout_chan:
 			Driver.Elev_set_motor_dir(Driver.DIRN_STOP)
 			Driver.Elev_set_door_open_lamp(false)
-			//Order_chan <- true
 		}
 	}
 }
