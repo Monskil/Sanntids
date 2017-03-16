@@ -31,9 +31,9 @@ func Function_state_machine() {
 	go Driver.Register_button(Order_chan)
 	go Driver.Elev_is_idle(Order_chan)
 	go Timer.Timer(Set_timeout_chan, Set_timer_chan, Order_chan)
-	go Network_main.Check_array(Full_array_chan)
+	//go Network_main.Check_array(Full_array_chan)
 
-	//go Driver.Print_queue()
+	go Driver.Print_queue()
 	for {
 		select {
 

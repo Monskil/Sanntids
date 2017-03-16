@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -41,8 +42,11 @@ var num_elevs_online int = 1
 var elev_1_ID int = 0
 var elev_2_ID int = 0
 var elev_3_ID int = 0
+var elev_new_ID int = 0
 var num_unique_IPs int = 1
-var IP_list = [20]string{"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"}
+
+//var IP_list = [20]string{"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"}
+var elev_lost string = ""
 
 func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 	var id string
@@ -60,12 +64,12 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool)
-	go peers.Transmitter(15647, id, peerTxEnable)
-	go peers.Receiver(15647, peerUpdateCh)
+	go peers.Transmitter(1201 /*15647*/, id, peerTxEnable)
+	go peers.Receiver(1201 /*15647*/, peerUpdateCh)
 	helloTx := make(chan HelloMsg)
 	helloRx := make(chan HelloMsg)
-	go bcast.Transmitter(16569, helloTx)
-	go bcast.Receiver(16569, helloRx)
+	go bcast.Transmitter(8081 /*16569*/, helloTx)
+	go bcast.Receiver(8081 /*16569*/, helloRx)
 
 	LocalIP, _ := localip.LocalIP()
 	go func() {
@@ -75,12 +79,13 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 			idle := Driver.Elev_is_idle(Order_chan)
 			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
 			helloTx <- Message
-			time.Sleep(50 * time.Millisecond)
+			//dtime.Sleep(50 * time.Millisecond)
 		}
 	}()
 
 	for {
 		select {
+
 		case a := <-helloRx:
 			received_msg = String_to_orders(a.Message)
 			received_IP = a.IP
@@ -105,14 +110,44 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 			} else {
 				num_elevs_online = 1
 			}
-			for i := 0; i < 20; i++ {
+			/*for i := 0; i < 20; i++ {
 				if IP_list[i] != "0" {
 					IP_list[i] = received_IP
 					break
 				} else {
 					full_array_chan <- true
 				}
+			}*/
+		///////////////////////////////////
+		case p := <-peerUpdateCh:
+			fmt.Printf("Peer update:\n")
+			fmt.Printf("  Peers:    %q\n", p.Peers)
+			fmt.Printf("  New:      %q\n", p.New)
+			fmt.Printf("  Lost:     %q\n", p.Lost)
+			/*if p.New != "" {
+				//num_elevs_online = num_elevs_online + 1
+			}*/
+
+			if strings.Join(p.Lost, "") != "" {
+				num_elevs_online = num_elevs_online - 1
+				elev_lost = (strings.Join(p.Lost, ""))
+				if _, err := fmt.Sscanf(elev_lost, "peer-129.241.187.%3d", &elev_new_ID); err == nil {
+					//fmt.Println("new_id: ", elev_new_ID)
+					//fmt.Println(elev_2_ID)
+					//fmt.Println(elev_3_ID)
+					if elev_new_ID == elev_2_ID {
+						elev_2_ID = 0
+						elev_new_ID = 0
+						elev_2 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+					} else if elev_new_ID == elev_3_ID {
+						elev_3_ID = 0
+						elev_new_ID = 0
+						elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false}
+					}
+				}
+
 			}
+			////////////////////////////////////////////////
 		}
 
 		//fmt.Println(num_elevs_online)
@@ -121,16 +156,17 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 		//fmt.Println("Current floor: ", received_current_floor)
 		//fmt.Println("Direction: ", received_direction)
 		//fmt.Println("No orders: ", received_is_idle)*/
-		fmt.Println("\n")
-		fmt.Println("Number of elevators online: %s", num_elevs_online)
-		//fmt.Println(elev_1)
-		//fmt.Println(elev_2)
-		//fmt.Println(elev_3)
+		//fmt.Println("\n")
+		fmt.Println("Number of elevators online: ", num_elevs_online)
+		//fmt.Println(elev_1_ID)
+		//fmt.Println(elev_2_ID)
+		//fmt.Println(elev_3_ID)
 
 	}
 
 }
 
+/*
 func Check_array(full_array_chan chan bool) {
 	select {
 	case <-full_array_chan:
@@ -162,16 +198,16 @@ func Check_array(full_array_chan chan bool) {
 
 	}
 }
-
+*/
 func Set_ID_from_IP() {
 	if _, err := fmt.Sscanf(elev_1.IP, "129.241.187.%3d", &elev_1_ID); err == nil {
-		fmt.Println(elev_1_ID)
+		//fmt.Println(elev_1_ID)
 	}
 	if _, err := fmt.Sscanf(elev_2.IP, "129.241.187.%3d", &elev_2_ID); err == nil {
-		fmt.Println(elev_2_ID)
+		//fmt.Println(elev_2_ID)
 	}
 	if _, err := fmt.Sscanf(elev_3.IP, "129.241.187.%3d", &elev_3_ID); err == nil {
-		fmt.Println(elev_2_ID)
+		//fmt.Println(elev_2_ID)
 	}
 }
 
