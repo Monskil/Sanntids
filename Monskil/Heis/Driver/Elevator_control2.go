@@ -357,12 +357,14 @@ func Next_order() Elev_motor_direction_t {
 			if Direction != 1 { /*HER*/
 				Direction = 1 /*HER*/
 			}
+
 		}
 		if Current_floor == 0 {
 			if Direction != 1 { /*HER*/
 				Direction = 1 /*HER*/
 			}
 			IO_clear_bit(MOTORDIR)
+
 		}
 		if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][0] == 1) || (Order_outer_list[floor][1] == 1)) && (floor < Current_floor) && (Direction != 1) && (More_orders_down == true) {
 			if Direction != -1 {
@@ -376,13 +378,14 @@ func Next_order() Elev_motor_direction_t {
 			if Direction != -1 { /*HER*/
 				Direction = -1 /*HER*/
 			}
+
 		}
 		if Current_floor == 3 {
 			if Direction != -1 { /*HER*/
 				Direction = -1 /*HER*/
 			}
 			IO_set_bit(MOTORDIR)
-			return DIRN_DOWN ////////////////////////////////////////////////////////monica har tulla her
+
 		}
 		if ((Order_inner_list[floor] == 1) || (Order_outer_list[floor][0] == 1) || (Order_outer_list[floor][1] == 1)) && (floor > Current_floor) && (Direction != -1) && (More_orders_up == true) {
 
@@ -492,7 +495,8 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 						Elev_set_door_open_lamp(false)
 					}
 				}
-			} /*else if floor == 2 && Order_outer_list[2][1] == 1 && Elev_get_floor_sensor_signal() == 3 { /////////////////////////////////////////denne elsen
+			}
+			if floor == 3 && Order_outer_list[3][1] == 1 && Elev_get_floor_sensor_signal() == 3 { /////////////////////////////////////////denne elsen
 				Arrived_chan <- true
 				select {
 				case <-Set_timeout_chan:
@@ -500,7 +504,7 @@ func Is_arrived(Arrived_chan chan bool, Set_timeout_chan chan bool) {
 					Order_outer_list[3][1] = 0
 					Elev_set_door_open_lamp(false)
 				}
-			}*/
+			}
 
 		}
 	}

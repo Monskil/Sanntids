@@ -79,7 +79,7 @@ func Network_main(Order_chan chan bool, full_array_chan chan bool) {
 			idle := Driver.Elev_is_idle(Order_chan)
 			Message := HelloMsg{Message: Orders_to_string(), IP: LocalIP, Current_floor: current_floor1, Direction: Dir, Is_idle: idle}
 			helloTx <- Message
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(5 * time.Millisecond)
 		}
 	}()
 
