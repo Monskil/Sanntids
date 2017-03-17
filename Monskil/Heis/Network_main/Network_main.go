@@ -278,38 +278,40 @@ func Cost_function() {
 				elev_sufficient = false
 				//Set_timer_2_floor <- floor
 				//Set_timer_2_b <- 1
-			} else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
+			} 
+			if Driver.Order_shared_outer_list[floor][1] == 1 {
+				if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
 
-				elev_1_difference = floor - elev_1.Current_floor
-				elev_2_difference = floor - elev_2.Current_floor
-				elev_3_difference = floor - elev_3.Current_floor
+					elev_1_difference = floor - elev_1.Current_floor
+					elev_2_difference = floor - elev_2.Current_floor
+					elev_3_difference = floor - elev_3.Current_floor
 
-				if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
+					if (elev_1.Direction == 0 || elev_1.Is_idle == true) && elev_1.Current_floor <= floor {
 
-					elev_sufficient = true
-				}
-				if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
-					if elev_1_difference > elev_2_difference {
-						elev_sufficient = false
-					} else if elev_1_difference == elev_2_difference {
-						if elev_1_ID < elev_2_ID {
+						elev_sufficient = true
+					}
+					if (elev_2.Direction == 0 || elev_2.Is_idle == true) && elev_2.Current_floor <= floor {
+						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
+						} else if elev_1_difference == elev_2_difference {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
 						}
 					}
-				}
-				if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor <= floor {
-					if elev_1_difference > elev_3_difference {
-						elev_sufficient = false
-					} else if elev_1_difference == elev_3_difference {
-						if elev_1_ID < elev_3_ID {
+					if (elev_3.Direction == 0 || elev_3.Is_idle == true) && elev_3.Current_floor <= floor {
+						if elev_1_difference > elev_3_difference {
 							elev_sufficient = false
+						} else if elev_1_difference == elev_3_difference {
+							if elev_1_ID < elev_3_ID {
+								elev_sufficient = false
+							}
 						}
 					}
 				}
 			}
-
 			if elev_sufficient == true {
-				Driver.Order_outer_list[floor][0] = 1
+				Driver.Order_outer_list[floor][1] = 1
 				elev_sufficient = false
 				//Set_timer_2_floor <- floor
 				//Set_timer_2_b <- 0
@@ -362,7 +364,12 @@ func Cost_function() {
 		for floor := Driver.N_FLOORS - 1; floor >= 0; floor-- {
 
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
-				if num_elevs_online == 2 {
+				
+				if num_elevs_online == 1 {
+					Driver.Order_outer_list[floor][0] = 1
+				
+				}else if num_elevs_online == 2 {
+
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
@@ -398,8 +405,10 @@ func Cost_function() {
 			}*/
 
 			if Driver.Order_shared_outer_list[floor][1] == 1 {
+				if num_elevs_online == 1 {
+					Driver.Order_outer_list[floor][1] = 1
 
-				if num_elevs_online == 2 {
+				}else if num_elevs_online == 2 {
 
 					elev_1_difference = elev_1.Current_floor - floor
 					elev_2_difference = elev_2.Current_floor - floor
