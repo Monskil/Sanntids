@@ -37,7 +37,7 @@ func Function_state_machine() {
 	go Timer.Timer_2(Timeout_2, Set_timer_2_floor, Set_timer_2_b)
 	//go Network_main.Check_array(Full_array_chan)
 
-	//go Driver.Print_queue()
+	go Driver.Print_queue()
 	for {
 		select {
 

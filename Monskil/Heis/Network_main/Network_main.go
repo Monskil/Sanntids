@@ -54,6 +54,7 @@ var Dead_3 bool = false
 var elev_lost string = ""
 
 func Network_main(Order_chan chan bool /*full_array_chan chan bool*/, timeout_2 chan bool) {
+
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -153,7 +154,7 @@ func Network_main(Order_chan chan bool /*full_array_chan chan bool*/, timeout_2 
 
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////77////////////////////////////////////////////////
-		case <-timeout_2:
+			/*case <-timeout_2:
 			//fmt.Println("tomeout registered")
 			num_elevs_online = num_elevs_online - 1
 			if Dead_2 == true {
@@ -164,7 +165,7 @@ func Network_main(Order_chan chan bool /*full_array_chan chan bool*/, timeout_2 
 				elev_3_ID = 0
 				Dead_3 = true
 				elev_3 = HelloMsg{Message: "0", IP: "000", Current_floor: 0, Direction: 0, Is_idle: false, Is_dead: true}
-			}
+			}*/
 		}
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//fmt.Println(num_elevs_online)
@@ -207,7 +208,12 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 		var elev_3_difference int = 0
 
 		for floor := 0; floor < Driver.N_FLOORS; floor++ {
-
+			if num_elevs_online == 3 {
+				for i := 0; i < 4; i++ {
+					Driver.Order_outer_list[i][0] = 0
+					Driver.Order_outer_list[i][1] = 0
+				}
+			}
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
 
 				if num_elevs_online == 1 {
@@ -379,6 +385,11 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 								elev_sufficient = false
 							}
 						}
+						if elev_1.Current_floor == 3 && elev_2.Current_floor == 3 && Driver.Order_outer_list[2][0] == 1 {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
 					}
 				}
 			}
@@ -406,6 +417,11 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 						if elev_1_difference > elev_2_difference {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_2_difference {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+						if elev_1.Current_floor == 3 && elev_2.Current_floor == 3 && Driver.Order_outer_list[1][1] == 1 {
 							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
@@ -443,6 +459,16 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 								elev_sufficient = false
 							}
 						}
+						if elev_1.Current_floor == 3 && elev_2.Current_floor == 3 && Driver.Order_outer_list[2][0] == 1 {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+						if elev_1.Current_floor == 3 && elev_3.Current_floor == 3 && Driver.Order_outer_list[2][0] == 1 {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
 					}
 					if (elev_3.Direction == 1 || elev_3.Is_idle == true) && elev_3.Current_floor >= floor {
 						if elev_1_difference > elev_3_difference {
@@ -489,6 +515,16 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 							elev_sufficient = false
 						} else if elev_1_difference == elev_3_difference {
 							if elev_1_ID < elev_3_ID {
+								elev_sufficient = false
+							}
+						}
+						if elev_1.Current_floor == 3 && elev_2.Current_floor == 3 && Driver.Order_outer_list[1][1] == 1 {
+							if elev_1_ID < elev_2_ID {
+								elev_sufficient = false
+							}
+						}
+						if elev_1.Current_floor == 3 && elev_3.Current_floor == 3 && Driver.Order_outer_list[1][1] == 1 {
+							if elev_1_ID < elev_2_ID {
 								elev_sufficient = false
 							}
 						}
