@@ -53,7 +53,7 @@ var Dead_3 bool = false
 //var IP_list = [20]string{"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"}
 var elev_lost string = ""
 
-func Network_main(Order_chan chan bool /*full_array_chan chan bool*/, timeout_2 chan bool) {
+func Network_main(Order_chan chan bool /*full_array_chan chan bool*/) {
 
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
@@ -199,7 +199,7 @@ func Set_ID_from_IP() {
 	}
 }
 
-func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
+func Cost_function() {
 	for {
 		time.Sleep(10 * time.Millisecond)
 		var elev_sufficient bool = false
@@ -208,18 +208,13 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 		var elev_3_difference int = 0
 
 		for floor := 0; floor < Driver.N_FLOORS; floor++ {
-			if num_elevs_online == 3 {
-				for i := 0; i < 4; i++ {
-					Driver.Order_outer_list[i][0] = 0
-					Driver.Order_outer_list[i][1] = 0
-				}
-			}
+
 			if Driver.Order_shared_outer_list[floor][0] == 1 {
 
 				if num_elevs_online == 1 {
 					Driver.Order_outer_list[floor][0] = 1
-					Set_timer_2_floor <- floor
-					Set_timer_2_b <- 0
+					//Set_timer_2_floor <- floor
+					//Set_timer_2_b <- 0
 				} else if num_elevs_online == 2 { //////////////////////////////////////////////// OPP 2 Heiser
 
 					elev_1_difference = floor - elev_1.Current_floor
@@ -243,8 +238,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 0
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 0
 				//fmt.Println(elev_sufficient)
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
@@ -255,8 +250,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 
 				if num_elevs_online == 1 {
 					Driver.Order_outer_list[floor][1] = 1
-					Set_timer_2_floor <- floor
-					Set_timer_2_b <- 1
+					//Set_timer_2_floor <- floor
+					//Set_timer_2_b <- 1
 				} else if num_elevs_online == 2 {
 
 					elev_1_difference = floor - elev_1.Current_floor
@@ -281,8 +276,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
 				elev_sufficient = false
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 1
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 1
 			} else if num_elevs_online == 3 { /////////////////////////////////////////////////////////////////// OPP 3 Heiser
 
 				elev_1_difference = floor - elev_1.Current_floor
@@ -316,8 +311,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
 				elev_sufficient = false
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 0
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 0
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
 			}*/
@@ -356,8 +351,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 1
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0
@@ -395,8 +390,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 0
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 0
 				elev_sufficient = false
 			} /* else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
@@ -431,8 +426,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 1
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0
@@ -483,8 +478,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][0] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 0
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 0
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][0] = 0
@@ -533,8 +528,8 @@ func Cost_function(Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 			}
 			if elev_sufficient == true {
 				Driver.Order_outer_list[floor][1] = 1
-				Set_timer_2_floor <- floor
-				Set_timer_2_b <- 1
+				//Set_timer_2_floor <- floor
+				//Set_timer_2_b <- 1
 				elev_sufficient = false
 			} /*else if elev_sufficient == false { ////////////////////////////////////////////////DENNE ELSEN
 				Driver.Order_outer_list[floor][1] = 0

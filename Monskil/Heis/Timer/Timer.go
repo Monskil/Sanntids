@@ -2,8 +2,8 @@ package Timer
 
 import (
 	"../Driver"
-	"../Network_main"
-	"fmt"
+	//"../Network_main"
+	//"fmt"
 	"time"
 )
 
@@ -26,6 +26,7 @@ func Timer(timeout chan bool, set_timer chan bool, Order_chan chan bool) {
 	}
 }
 
+/*
 func Timer_2(timeout_2 chan bool, Set_timer_2_floor chan int, Set_timer_2_b chan int) {
 	const dead_time = 2 * time.Second
 	timer := time.NewTimer(0)
@@ -46,4 +47,4 @@ func Timer_2(timeout_2 chan bool, Set_timer_2_floor chan int, Set_timer_2_b chan
 			timeout_2 <- true
 		}
 	}
-}
+}*/
