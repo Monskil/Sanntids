@@ -303,7 +303,7 @@ func Elev_test_set_order_outer_list(floor int, button int, value int, button_typ
 func Order_set_inner_order() {
 	for {
 		for floor := 0; floor < N_FLOORS; floor++ {
-			if Check_all_buttons() == Button_channel_matrix[floor][2] && floor != Elev_get_floor_sensor_signal() {
+			if Check_all_buttons() == Button_channel_matrix[floor][2] {
 				Order_inner_list[floor] = 1
 			}
 		}
